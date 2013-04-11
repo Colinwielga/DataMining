@@ -1,0 +1,22 @@
+#BlueJ class context
+comment0.params=line
+comment0.target=Record(java.lang.String)
+comment1.params=
+comment1.target=java.lang.String\ toString()
+comment2.params=trainingRecords\ how\ k
+comment2.target=java.lang.String\ predictClass(java.util.ArrayList,\ DistanceMetric,\ int)
+comment3.params=a\ b
+comment3.target=int\ compare(java.util.Map.Entry,\ java.util.Map.Entry)
+comment4.params=fileName
+comment4.target=java.util.ArrayList\ parseArff(java.lang.String)
+comment5.params=args
+comment5.target=void\ main(java.lang.String[])
+comment6.params=trainFile\ testFile
+comment6.target=void\ classify(java.lang.String,\ java.lang.String)
+comment7.params=tests\ trains
+comment7.target=void\ altMinMaxNorm(java.util.ArrayList,\ java.util.ArrayList)
+comment8.params=tests\ trains
+comment8.target=void\ minMaxNorm(java.util.ArrayList,\ java.util.ArrayList)
+comment9.params=tests\ trains
+comment9.target=void\ zscoreNorm(java.util.ArrayList,\ java.util.ArrayList)
+numComments=10
