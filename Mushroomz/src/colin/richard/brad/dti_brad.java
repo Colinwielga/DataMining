@@ -1,3 +1,4 @@
+package colin.richard.brad;
 
 //title: DataTrainer
 //purpose: to calculate and print analyses for a specifically formatted piece of data
