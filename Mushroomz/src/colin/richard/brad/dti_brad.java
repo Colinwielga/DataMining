@@ -365,25 +365,25 @@ public class DataTrainer{
        
        for (int i = 0; i < Ginis.size(); i++) //I couldn't just do a for-each loop for some reason. 
        {
-           d = (double)Ginis.get(i);
+           d = (Double)Ginis.get(i);
            if (bestGini > d)                 //looks for the lowest GINI value
            {
                bestGini = d;                 //if found, makes it the best
-               bGini = (double)s.get(Ginis.indexOf(d));
+               bGini = (Double)s.get(Ginis.indexOf(d));
            }
        }                                     //essentially the same for other values
        for (int i = 0; i < InfoGains.size(); i++){
-           d = (double)InfoGains.get(i);
+           d = (Double)InfoGains.get(i);
            if (bestInfoGain < d){
                bestInfoGain = d;
-               bIG =  (double)s.get(InfoGains.indexOf(d));
+               bIG =  (Double)s.get(InfoGains.indexOf(d));
            }
        }
        for (int i = 0; i < GainRatios.size(); i++){
-           d = (double)GainRatios.get(i);
+           d = (Double)GainRatios.get(i);
            if (bestGR < d){
                bestGR = d;
-               bGR = (double)s.get(GainRatios.indexOf(d));
+               bGR = (Double)s.get(GainRatios.indexOf(d));
            }
        }
        printer.println("");
