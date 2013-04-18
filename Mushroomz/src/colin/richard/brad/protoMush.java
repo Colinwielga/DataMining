@@ -40,10 +40,13 @@ public class protoMush{
 	}
 }
 
+//this might only work for KNN, needs to be modified for DTI
 //Parses and stores train and test records, and predicts the class of test records with the help of a DistanceMetric.
 class Record {
 	double[] attributes;
 	String classname;
+	
+	String getClassname(){return classname;}
 	
 	Record(String line) {
 		String[] fields = line.split(",");
@@ -111,11 +114,42 @@ class Record {
 	}
 }
 
-//will parse the file, contains method which returns arrays with data
-class FileReader{}
-
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
-class DTI{}
+class DTI{
+	ArrayList<Record> dataSet;
+	public DTI(ArrayList<Record> data){dataset = data;}
+	
+	class Tree{
+		ArrayList<ArrayList> nodes;
+		
+		Tree(ArrayList<ArrayList> splits){
+			nodes = splits;
+		}
+		
+		int length(){return nodes.size();}
+		
+		public String toString(){return "";}
+		
+		int findAttributeNode(String attribute){return -1;}
+		
+		void prune(int nodeIndex){nodes.remove(nodeIndex);}
+		
+		void prune(ArrayList<Record> node){nodes.remove(node);}
+		
+		String assignClassTo(Record r){return null;}
+	}
+	
+	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree){
+		ArrayList results = new ArrayList<String>();
+		for (Record r : testSet){
+			results.add(decisionTree.assignClassTo(r));
+			}
+		return results;
+		}
+	
+	ArrayList<Record> bestSplits(DistanceMetric metric){return null;}
+	
+}
 
 //performs KNN
 class KNN{}
