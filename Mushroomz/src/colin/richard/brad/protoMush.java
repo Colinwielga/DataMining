@@ -140,7 +140,7 @@ class DTI{
 	}
 	
 	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree){
-		ArrayList results = new ArrayList<String>();
+		ArrayList<String> results = new ArrayList<String>();
 		for (Record r : testSet){
 			results.add(decisionTree.assignClassTo(r));
 			}
@@ -149,6 +149,10 @@ class DTI{
 	
 	ArrayList<Record> bestSplits(DistanceMetric metric){return null;}
 	
+	void run(){
+		for ()
+		Tree t = new Tree(bestSplits())
+	}
 }
 
 //performs KNN
