@@ -1,3 +1,5 @@
+package colin.richard.brad;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -158,7 +160,7 @@ abstract class DistanceMetric {
 		//is called to computer it aggregate scores.
 		HashMap<String, Scores> scoresPerClass = new HashMap<String, Scores>();
 		for(String key : genes.classes.keySet())
-			scoresPerClass.put(key, new Scores(getClass().getName().replaceAll("_", " "), key));
+			scoresPerClass.put(key, new Scores(getClass().getSimpleName().replaceAll("_", " "), key));
 			//Make the new Scores objects here. They are used only temporarily to calculate the scores for this distance matrix. They will be destroyed after the function returns.
 			//The Scores objects get passed the name of their target class so that they can add to the class's plot, as well as the name of this distance metric.
 
@@ -246,7 +248,7 @@ public class genes {
 	
 	public static void main(String[] args) throws IOException {
 		System.out.print("Type a to run on (a)ll genes, s for (s)ignificant genes, or return to enter a custom pair of filenames: ");
-		String test = System.console().readLine();
+		String test = "s";//System.console().readLine();
 		if(test.equals("a")) {
 			classify("ALL_AML_AllGenes_NoID.train.arff", "ALL_AML_AllGenes_NoID.test.arff");
 		} else if(test.equals("s")) {
@@ -294,7 +296,7 @@ public class genes {
 			int testClassCount = classes.size() - trainClassCount;
 			System.out.printf("Train stats: %d instances, %d attributes, %d classes\n", trains.size(), trains.get(0).attributes.length, trainClassCount);
 			System.out.printf("Test stats: %d instances, %d attributes, %d classes\n", tests.size(), tests.get(0).attributes.length, testClassCount);
-			
+
 			//Set up display
 			JPanel gridPanel = new JPanel();
 			gridPanel.setLayout(new GridLayout(0, 3));
@@ -338,9 +340,9 @@ public class genes {
 				recallTables += "k=" + (k*2+3) + ",";
 				F1Tables += "k=" + (k*2+3) + ",";
 				for(DistanceMetric dm : metrics) {
-					precisionTables += className.getValue().precision.getSeries(dm.getClass().getName().replaceAll("_"," ")).getY(k) + ",";
-					recallTables += className.getValue().recall.getSeries(dm.getClass().getName().replaceAll("_"," ")).getY(k) + ",";
-					F1Tables += className.getValue().Fmeasure.getSeries(dm.getClass().getName().replaceAll("_"," ")).getY(k) + ",";
+					precisionTables += className.getValue().precision.getSeries(dm.getClass().getSimpleName().replaceAll("_"," ")).getY(k) + ",";
+					recallTables += className.getValue().recall.getSeries(dm.getClass().getSimpleName().replaceAll("_"," ")).getY(k) + ",";
+					F1Tables += className.getValue().Fmeasure.getSeries(dm.getClass().getSimpleName().replaceAll("_"," ")).getY(k) + ",";
 				}
 				precisionTables += "\n";
 				recallTables += "\n";

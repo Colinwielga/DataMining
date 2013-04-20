@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 
 import javax.xml.ws.Holder;
 
@@ -110,8 +111,8 @@ public class Knn {
 		
 		private static int[][] fullkNN(int k,Instances train, Instances test,int code) {
 			int[][] confusionMat = new int[train.numClasses()][train.numClasses()];
-			for (int i = 0; i<test.size();i++){
-				int[] o = kNN(k,train,test.get(i),code);
+			for (int i = 0; i<test.numInstances();i++){
+				int[] o = kNN(k,train,test.instance(i),code);
 				confusionMat[o[0]][o[1]]++; // guess, what it should be
 			}
 			return confusionMat;
@@ -166,8 +167,10 @@ public class Knn {
 			Instance[] insts = new Instance[k];
 			double[] distances = new double[k];
 			double dis=0;
-			for (Instance ins:train){
-				
+			
+			Enumeration<Instance> trainEnum = (Enumeration<Instance>)train.enumerateInstances();
+			while(trainEnum.hasMoreElements()) {
+				Instance ins = trainEnum.nextElement();
 				if (code == EUCLIDIAN){
 					dis = Euclidian(ins,test);
 				}else if (code == CITYBLOCK){
@@ -343,11 +346,11 @@ public class Knn {
 
 		private static double[][] tohold(Instances data) {
 			// reduces that the data to an array
-			double[][] result = new double[data.size()][data.numAttributes()];
+			double[][] result = new double[data.numInstances()][data.numAttributes()];
 
-			for (int i = 0 ; i< data.size();i++){
-				for (int j=0;j<data.get(i).numAttributes();j++){
-					result[i][j] = data.get(i).value(j);
+			for (int i = 0 ; i< data.numInstances();i++){
+				for (int j=0;j<data.instance(i).numAttributes();j++){
+					result[i][j] = data.instance(i).value(j);
 				}
 			}
 			return result;
@@ -364,9 +367,9 @@ public class Knn {
 			int globalMaxCount = 0;
 			int globalMinCount = 0;
 			for (int j=1;j<data.numAttributes()-1;j++){ 
-				min = data.get(0).value(j);
-				max = data.get(0).value(j);
-				for (Instance i : data){
+				min = data.instance(0).value(j);
+				max = data.instance(0).value(j);
+				for (Instance i : data.enumerateInstances()){
 					current = i.value(j);
 					if (current < min){
 						min = current;
@@ -426,5 +429,3 @@ public class Knn {
 		
 		
 	}
-
-}

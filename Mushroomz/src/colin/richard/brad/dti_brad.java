@@ -13,10 +13,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
-
 //This DataTrainer takes Data which is formatted with one Numeric column and one Class column (the Class column having two possible values)
 //it instructs the user how to use the program through the console
-public class DataTrainer{ 
+class DataTrainer{ 
     private static ArrayList<ArrayList> cols; //the initial arraylist, which contains the ArrayLists containing the data
     private static ArrayList<Double> nums; //this ArrayList contains the numeric data
     private static ArrayList classes; //this ArrayList contains the class data
