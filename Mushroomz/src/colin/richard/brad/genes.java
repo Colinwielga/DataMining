@@ -17,9 +17,9 @@ import java.awt.GridLayout;
 
 //Stores aggregate scores for all distance metrics and k-values in a plottable and queryable form.
 class Class {
-	public XYSeriesCollection
-		precision = new XYSeriesCollection(),
-		recall    = new XYSeriesCollection(),
+	public XYSeriesCollection)_
+		precision = new XYSeriesCollection();
+		recall    = new XYSeriesCollection();
 		Fmeasure  = new XYSeriesCollection();
 }
 
