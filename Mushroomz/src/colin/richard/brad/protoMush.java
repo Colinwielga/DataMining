@@ -38,6 +38,9 @@ public class protoMush{
 		
 		return records;
 	}
+	
+	static ArrayList<ArrayList> parseAttributes(String fileName){return null;} 
+	
 }
 
 //this might only work for KNN, needs to be modified for DTI
@@ -117,14 +120,42 @@ class Record {
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI{
 	ArrayList<Record> dataSet;
-	public DTI(ArrayList<Record> data){dataset = data;}
+	ArrayList<String[]> attributes;
+	ArrayList<String> classes;
+	Analysis[] analyses;
 	
+	public DTI(ArrayList<Record> data, ArrayList<String[]> att, ArrayList<String> c){
+		dataSet = data;
+		attributes = att;
+		classes = c;}
+	
+	//dunno if I should have this
+	abstract class Analysis{
+		//
+	}
+	//or this
+	class DTIRecord extends Record{
+		DTIRecord(String in){
+			super(in);
+			}
+	}
+	
+	//yeah, establishes hierarchy for Tree class
+	void establishHierarchy(){
+		//
+	}
+	
+	//this class does a lot of stuff
 	class Tree{
+		//it's an arrayList of arrayLists. Each index is a branch from the initial node and so-on 
+		//we're able to follow the hierarchy through 
 		ArrayList<ArrayList> nodes;
 		
-		Tree(ArrayList<ArrayList> splits){
-			nodes = splits;
+		Tree(ArrayList<ArrayList> hierarchy){
+			nodes = hierarchy;
 		}
+		
+	
 		
 		int length(){return nodes.size();}
 		
@@ -149,10 +180,7 @@ class DTI{
 	
 	ArrayList<Record> bestSplits(DistanceMetric metric){return null;}
 	
-	void run(){
-		for ()
-		Tree t = new Tree(bestSplits())
-	}
+	
 }
 
 //performs KNN
