@@ -122,18 +122,24 @@ class DTI{
 	ArrayList<Record> dataSet;
 	ArrayList<String[]> attributes;
 	ArrayList<String> classes;
-	Analysis[] analyses;
 	
+	//constructor just instantiates variables
 	public DTI(ArrayList<Record> data, ArrayList<String[]> att, ArrayList<String> c){
 		dataSet = data;
 		attributes = att;
-		classes = c;}
+		classes = c;
+	}
 	
 	//dunno if I should have this
 	abstract class Analysis{
-		//
+		//override some  math
+		class GiniIndex extends Analysis{}
+		class Entropy extends Analysis{}
+		class InfoGain extends Analysis{}
+		class SplitInfo extends Analysis{}
 	}
-	//or this
+	
+	//dunno if I need this either
 	class DTIRecord extends Record{
 		DTIRecord(String in){
 			super(in);
@@ -141,8 +147,16 @@ class DTI{
 	}
 	
 	//yeah, establishes hierarchy for Tree class
-	void establishHierarchy(){
-		//
+	ArrayList<ArrayList> establishHierarchy(){
+		//it will use the attributes array for reference
+		//it needs to make instance counts for each attribute - ?
+		//it will analyze the attributes based on the analysis chosen
+		//it will then add the best split (I might need a possible splits array?)
+		//it will then add that split to the results array
+		//it will then move on, remove that attribute from the temp array and reiterate
+		//maybe it could be a recursive algorithm?
+		//ick
+		return null;
 	}
 	
 	//this class does a lot of stuff
@@ -155,21 +169,26 @@ class DTI{
 			nodes = hierarchy;
 		}
 		
-	
-		
+		//this actually isn't right
 		int length(){return nodes.size();}
 		
+		//yay toString - I want a nice visual of the tree
 		public String toString(){return "";}
 		
+		//yeah - that
 		int findAttributeNode(String attribute){return -1;}
 		
+		//deletes a node and its children - ick maybe not good stuff happening
 		void prune(int nodeIndex){nodes.remove(nodeIndex);}
 		
+		//same as above but stupider
 		void prune(ArrayList<Record> node){nodes.remove(node);}
 		
+		//the test
 		String assignClassTo(Record r){return null;}
 	}
 	
+	//pretty much just conglomerates test results
 	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree){
 		ArrayList<String> results = new ArrayList<String>();
 		for (Record r : testSet){
@@ -177,10 +196,6 @@ class DTI{
 			}
 		return results;
 		}
-	
-	ArrayList<Record> bestSplits(DistanceMetric metric){return null;}
-	
-	
 }
 
 //performs KNN
