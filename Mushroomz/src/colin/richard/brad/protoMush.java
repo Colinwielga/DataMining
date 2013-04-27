@@ -5,10 +5,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.paukov.combinatorics.Factory;
+import org.paukov.combinatorics.Generator;
+import org.paukov.combinatorics.ICombinatoricsVector;
+import org.paukov.combinatorics.util.*;
+
+
 
 //TODO still needs to perform the combinatorics, maybe in the record class
 //TODO still needs to check splits and create a tree
@@ -89,7 +97,7 @@ class Record {
 		String[] fields = line.split(",");
 		
 		//Globally keep track of class names so we can properly form confusion matrices, and so we know how many graphs to plot
-		classname = fields[fields.length - 1];
+		classname = fields[0];
 		
 	}
 	
@@ -102,26 +110,25 @@ class DTI{
 	ArrayList<String> classes;
 	
 	//constructor just instantiates variables
-	public DTI(ArrayList<Record> data, ArrayList<String[]> att, ArrayList<String> c){
+	public DTI(ArrayList<Record> data){
 		dataSet = data;
+		ArrayList<String[]> att = new ArrayList<String[]>();
+		ArrayList<String> c = new ArrayList<String>();
+		for (Record r : dataSet){
+			att.add(r.attributes);
+			c.add(r.classname);
+		}
 		attributes = att;
 		classes = c;
 	}
 	
 	//dunno if I should have this
 	abstract class Analysis{
-		//override some  math
+		//override some math
 		class GiniIndex extends Analysis{}
 		class Entropy extends Analysis{}
 		class InfoGain extends Analysis{}
 		class SplitInfo extends Analysis{}
-	}
-	
-	//dunno if I need this either
-	class DTIRecord extends Record{
-		DTIRecord(String in){
-			super(in);
-			}
 	}
 	
 	//yeah, establishes hierarchy for Tree class
@@ -135,6 +142,23 @@ class DTI{
 		//maybe it could be a recursive algorithm?
 		//ick
 		return null;
+	}
+	
+	void combinatorics(String [] attr, int n){
+		
+		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
+
+		   // Create a complex-combination generator
+		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n, false, true);
+		   
+		   List<String> a1;
+		   // Iterate the combinations
+		   for (ICombinatoricsVector<ICombinatoricsVector<String>> comb : gen) {
+		      //System.out.println(ComplexCombinationGenerator.convert2String(comb) + " - " + comb);
+			  for (ICombinatoricsVector<String> v : comb){
+				  a1 = v.getVector();
+			  }
+		   }
 	}
 	
 	//this class does a lot of stuff
