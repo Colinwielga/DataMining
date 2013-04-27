@@ -4,7 +4,7 @@
 @attribute cap-shape {x,b,s,f,k,c}
 @attribute cap-surface {s,y,f,g}
 @attribute cap-color {n,y,w,g,e,p,b,u,c,r}
-@attribute bruises? {t,f}
+@attribute bruises {t,f}
 @attribute odor {p,a,l,n,f,c,y,s,m}
 @attribute gill-attachment {f,a}
 @attribute gill-spacing {c,w}
