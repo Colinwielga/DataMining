@@ -226,6 +226,14 @@ class DTI{
 		
 	}
 	
+	ArrayList<Record> findUsedData(ArrayList<String[]> givenNode){
+		return null;
+	}
+	
+	ArrayList<ArrayList> findUnusedAttributes(ArrayList<String[]> givenNode){
+		return null;
+	}
+	
 	//generates all possible combinations for an array
 	ArrayList<ArrayList> possibleCombinations(String [] attr, int n){
 		
@@ -262,15 +270,22 @@ class DTI{
 		
 		ArrayList<Tree> nodes = new ArrayList<Tree>();
 		
-		Tree(ArrayList<ArrayList> allAttributes, ArrayList<Record> d){
+		Tree(ArrayList<ArrayList> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
 			attrs = allAttributes;
 			data = d;
-			
+			build(h);
 		}
 		
 		void build(Analysis w) throws IOException{
 			
 			ArrayList<ArrayList> split = establishHierarchy(w, attrs, data);
+			for (int i = 0; i < split.size(); i++){
+				ArrayList<String[]> branch = split.get(i);
+				ArrayList<Record> d = findUsedData(branch);
+				ArrayList<ArrayList> a = findUnusedAttributes(branch);
+				Tree node = new Tree(a, d, w);
+				nodes.add(node);
+			}
 			
 		}
 		
