@@ -124,41 +124,125 @@ class DTI{
 	
 	//dunno if I should have this
 	abstract class Analysis{
-		//override some math
-		class GiniIndex extends Analysis{}
-		class Entropy extends Analysis{}
-		class InfoGain extends Analysis{}
-		class SplitInfo extends Analysis{}
+		
+		//counts how many times an attribute value occurs
+		int count(int index, String val){
+			int result = 0;
+			for (String[] s : attributes){
+				if (s[index].equals(val))
+					result++;
+			}
+			return result;
+		}
+		
+		static double analyze(ArrayList<String[]> combo){
+			
+			
+			return -1.0;
+		}
+		
+		
+		
+	}
+	//override some math
+	class GiniIndex extends Analysis{}
+	class Entropy extends Analysis{}
+	class InfoGain extends Entropy{}
+	class SplitInfo extends Analysis{}
+	
+	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
+	ArrayList<ArrayList> establishHierarchy(Analysis chief) throws IOException{ //chief is the analysis we're checking with
+		ArrayList<ArrayList> allAttributes = protoMush.parseAttributes("filename");
+		
+		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
+		ArrayList<ArrayList> besties = new ArrayList<ArrayList>(allAttributes.size()); //this will hold the best split for each attribute
+		
+		for (ArrayList attr : allAttributes){attr.remove(0);} //we don't need the attribute's name
+		
+		for (ArrayList attr : allAttributes){ //for each attribute in allAttributes
+			String [] attrCast = new String[attr.size()]; 
+			attr.toArray(attrCast); //put the attribute's values in the array attrCast
+			
+			ArrayList<ArrayList> poss = possibleCombinations (attrCast, 2); //poss contains all possible splits on the attribute
+			
+			double bestAnalysis = -666666.666666; //all hail s@an
+			ArrayList<String[]> bestSplit = new ArrayList<String[]>();
+			
+			for (ArrayList p : poss){ //for each possible split on the attribute, we're checking for the best
+				double dummy = chief.analyze(p); //check the analysis of that split
+				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
+					bestAnalysis = dummy;
+					bestSplit = p;
+				}
+				else if (chief instanceof GiniIndex && dummy < bestAnalysis){ //if chief is Gini
+					bestAnalysis = dummy;
+					bestSplit = p;
+				}
+				else if(chief instanceof Entropy || chief instanceof InfoGain && dummy > bestAnalysis){ //if chief is something else
+					bestAnalysis = dummy;
+					bestSplit = p;
+				}
+			}
+			
+			analBesties.set(allAttributes.indexOf(attr), bestAnalysis); //store the best analysis for this attribute
+			besties.set(allAttributes.indexOf(attr), bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
+			
+		}
+		
+		ArrayList results = new ArrayList<ArrayList>();
+		double best = -666666.666666;
+		int indexOfBest = -1;
+		while (analBesties.size() > 0){
+			for (double d : analBesties){
+				if (best == -666666.666666){ //if we're checking for the first time
+					best = d;
+					indexOfBest = analBesties.indexOf(d);
+					
+				}
+				else if (chief instanceof GiniIndex && d < best){ //if chief is Gini
+					best = d;
+					indexOfBest = analBesties.indexOf(d);
+				}
+				else if(chief instanceof Entropy || chief instanceof InfoGain && d > best){ //if chief is something else
+					best = d;
+					indexOfBest = analBesties.indexOf(d);
+				}
+			}
+			results.add(besties.get(indexOfBest)); //add the best split
+			analBesties.remove(indexOfBest); //remove that attribute's analysis 
+			besties.remove(indexOfBest); //remove that attribute
+		}
+		
+		return results;
+		//results is an array of ArrayLists, in order of best analysis
 	}
 	
-	//yeah, establishes hierarchy for Tree class
-	ArrayList<ArrayList> establishHierarchy(){
-		//it will use the attributes array for reference
-		//it needs to make instance counts for each attribute - ?
-		//it will analyze the attributes based on the analysis chosen
-		//it will then add the best split (I might need a possible splits array?)
-		//it will then add that split to the results array
-		//it will then move on, remove that attribute from the temp array and reiterate
-		//maybe it could be a recursive algorithm?
-		//ick
-		return null;
-	}
-	
-	void combinatorics(String [] attr, int n){
+	//generates all possible combinations for an array
+	ArrayList<ArrayList> possibleCombinations(String [] attr, int n){
 		
 		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
-
+		   ArrayList<ArrayList> results = new ArrayList<ArrayList>();
+		   ArrayList<String[]> results2 = new ArrayList<String[]>();
 		   // Create a complex-combination generator
 		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n, false, true);
-		   
+		   String[] r;
 		   List<String> a1;
-		   // Iterate the combinations
+		   // Iterate through the different combinations
 		   for (ICombinatoricsVector<ICombinatoricsVector<String>> comb : gen) {
-		      //System.out.println(ComplexCombinationGenerator.convert2String(comb) + " - " + comb);
+			  //Iterate through the individual parts of the combination
 			  for (ICombinatoricsVector<String> v : comb){
-				  a1 = v.getVector();
+				  a1 = v.getVector(); //this might be redundant
+				  r = new String[a1.size()]; //we're going to put it in an array
+				  a1.toArray(r); //here's the array
+				  results2.add(r); //woohoo, add that array to the array of arrays
 			  }
+			  
+			  results.add(results2); //add the array of arrays to another array
 		   }
+		   return results;
+		   //so, basically, what this looks like is, an array with many arrays in it
+		   //each array in 'results' is an array of String[] arrays
+		   //each String[] contains the individual attribute values
 	}
 	
 	//this class does a lot of stuff
