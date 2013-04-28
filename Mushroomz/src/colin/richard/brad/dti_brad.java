@@ -234,8 +234,8 @@ class DataTrainer{
         }
        save2 = count1 + count2;
                                                                   //the following steps get the GINISplit and add it to our ArrayList
-       double d1 = (double)oh.get(0);                             //gets the indices. Downcasting is necessary.
-       double d2 = (double)oh.get(1);                             //below is math for the GINISplit
+       double d1 = (Double)oh.get(0);                             //gets the indices. Downcasting is necessary.
+       double d2 = (Double)oh.get(1);                             //below is math for the GINISplit
        double splitI = ((save1/dubs.size()) * (d1)) + ((save2/dubs.size()) * (d2)); 
        oh.add(splitI);                                            //stick it to the array
        return oh;                                                 //done deal
@@ -292,8 +292,8 @@ class DataTrainer{
             oh.add(0.0);
         }
        save2 = count1 + count2;
-       double d1 = (double)oh.get(0);
-       double d2 = (double)oh.get(1);
+       double d1 = (Double)oh.get(0);
+       double d2 = (Double)oh.get(1);
        count1 = 0.0;
        count2 = 0.0;
        
