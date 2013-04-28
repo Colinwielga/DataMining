@@ -122,6 +122,11 @@ class DTI{
 		classes = c;
 	}
 	
+	void run() throws IOException{
+		ArrayList<ArrayList> allAttributes = protoMush.parseAttributes("filename");
+		Tree initial = new Tree(allAttributes);
+	}
+	
 	//dunno if I should have this
 	abstract class Analysis{
 		
@@ -135,8 +140,8 @@ class DTI{
 			return result;
 		}
 		
-		static double analyze(ArrayList<String[]> combo){
-			
+		double analyze(ArrayList<String[]> combo, ArrayList<Record> dataSect){
+			//analyzes the combination for this section of the Data
 			
 			return -1.0;
 		}
@@ -151,13 +156,14 @@ class DTI{
 	class SplitInfo extends Analysis{}
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
-	ArrayList<ArrayList> establishHierarchy(Analysis chief) throws IOException{ //chief is the analysis we're checking with
-		ArrayList<ArrayList> allAttributes = protoMush.parseAttributes("filename");
+	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
+	ArrayList<ArrayList> establishHierarchy(Analysis chief, ArrayList<ArrayList> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
 		
+		allAttributes.remove(0); //we don't want to deal with the class
 		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
 		ArrayList<ArrayList> besties = new ArrayList<ArrayList>(allAttributes.size()); //this will hold the best split for each attribute
 		
-		for (ArrayList attr : allAttributes){attr.remove(0);} //we don't need the attribute's name
+		for (ArrayList attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
 		
 		for (ArrayList attr : allAttributes){ //for each attribute in allAttributes
 			String [] attrCast = new String[attr.size()]; 
@@ -169,7 +175,7 @@ class DTI{
 			ArrayList<String[]> bestSplit = new ArrayList<String[]>();
 			
 			for (ArrayList p : poss){ //for each possible split on the attribute, we're checking for the best
-				double dummy = chief.analyze(p); //check the analysis of that split
+				double dummy = chief.analyze(p, data); //check the analysis of that split
 				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
 					bestAnalysis = dummy;
 					bestSplit = p;
@@ -192,7 +198,7 @@ class DTI{
 		ArrayList results = new ArrayList<ArrayList>();
 		double best = -666666.666666;
 		int indexOfBest = -1;
-		while (analBesties.size() > 0){
+		//while (analBesties.size() > 0){
 			for (double d : analBesties){
 				if (best == -666666.666666){ //if we're checking for the first time
 					best = d;
@@ -209,12 +215,15 @@ class DTI{
 				}
 			}
 			results.add(besties.get(indexOfBest)); //add the best split
-			analBesties.remove(indexOfBest); //remove that attribute's analysis 
-			besties.remove(indexOfBest); //remove that attribute
-		}
+			//analBesties.remove(indexOfBest); //remove that attribute's analysis 
+			//besties.remove(indexOfBest); //remove that attribute
+		//}
 		
-		return results;
-		//results is an array of ArrayLists, in order of best analysis
+		//return results;
+			//results is an array of ArrayLists, in order of best analysis
+		return besties.get(indexOfBest);
+			//this is the best split of those remaining attributes
+		
 	}
 	
 	//generates all possible combinations for an array
@@ -247,16 +256,26 @@ class DTI{
 	
 	//this class does a lot of stuff
 	class Tree{
-		//it's an arrayList of arrayLists. Each index is a branch from the initial node and so-on 
-		//we're able to follow the hierarchy through 
-		ArrayList<ArrayList> nodes;
 		
-		Tree(ArrayList<ArrayList> hierarchy){
-			nodes = hierarchy;
+		ArrayList<ArrayList> attrs;
+		ArrayList<Record> data;
+		
+		ArrayList<Tree> nodes = new ArrayList<Tree>();
+		
+		Tree(ArrayList<ArrayList> allAttributes, ArrayList<Record> d){
+			attrs = allAttributes;
+			data = d;
+			
 		}
 		
-		//this actually isn't right
-		int length(){return nodes.size();}
+		void build(Analysis w) throws IOException{
+			
+			ArrayList<ArrayList> split = establishHierarchy(w, attrs, data);
+			
+		}
+		
+		
+		
 		
 		//yay toString - I want a nice visual of the tree
 		public String toString(){return "";}
