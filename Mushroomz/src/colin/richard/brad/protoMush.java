@@ -270,12 +270,17 @@ class DTI{
 		
 		ArrayList<Tree> nodes = new ArrayList<Tree>();
 		
+		//takes the attributes this tray can possibly cover, the data it covers, and the type of analysis
 		Tree(ArrayList<ArrayList> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
 			attrs = allAttributes;
 			data = d;
 			build(h);
 		}
 		
+		//finds the best attribute to split on and its split
+		//iterates through the children of that split
+		//adds them as trees
+		//this is recursive in a way...
 		void build(Analysis w) throws IOException{
 			
 			ArrayList<ArrayList> split = establishHierarchy(w, attrs, data);
