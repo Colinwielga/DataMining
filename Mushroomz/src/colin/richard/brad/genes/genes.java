@@ -61,9 +61,9 @@ class Record {
 					attributes.add(0.0);
 			/*
 			if(instance.stringValue(i).equals("?"))
-				attributes[i-1] = 0.5;
+				attributes.set(i-1, 0.5);
 			else
-				attributes[i-1] = genes.attributeMapping[i].get(instance.stringValue(i)).doubleValue();*/
+				attributes.set(i-1, genes.attributeMapping[i].get(instance.stringValue(i)).doubleValue());*/
 		}
 	}
 
@@ -208,35 +208,35 @@ class Euclidean extends DistanceMetric {
 
 class Chebyshev extends DistanceMetric {
 	public double distanceBetween(Record a, Record b) {
-		assert(a.attributes.length == b.attributes.length);
+		assert(a.attributes.size() == b.attributes.size());
 		
 		double dist = 0;
-		for (int attrib = 0; attrib < a.attributes.length; attrib++)
-			dist = Math.max(dist, Math.abs(a.attributes[attrib] - b.attributes[attrib]));
+		for (int attrib = 0; attrib < a.attributes.size(); attrib++)
+			dist = Math.max(dist, Math.abs(a.attributes.get(attrib) - b.attributes.get(attrib)));
 		return dist;
 	}
 }
 
 class City_Block extends DistanceMetric {
 	public double distanceBetween(Record a, Record b) {
-		assert(a.attributes.length == b.attributes.length);
+		assert(a.attributes.size() == b.attributes.size());
 		
 		double dist = 0;
-		for (int attrib = 0; attrib < a.attributes.length; attrib++)
-			dist += Math.abs(a.attributes[attrib] - b.attributes[attrib]);
+		for (int attrib = 0; attrib < a.attributes.size(); attrib++)
+			dist += Math.abs(a.attributes.get(attrib) - b.attributes.get(attrib));
 		return dist;
 	}
 }
 
 class Cosine extends DistanceMetric {
 	public double distanceBetween(Record a, Record b) {
-		assert(a.attributes.length == b.attributes.length);
+		assert(a.attributes.size() == b.attributes.size());
 		
 		double ab_dot_product = 0, a_magnitude_squared = 0, b_magnitude_squared = 0;
-		for (int attrib = 0; attrib < a.attributes.length; attrib++) {
-			ab_dot_product += a.attributes[attrib] * b.attributes[attrib];
-			a_magnitude_squared += a.attributes[attrib] * a.attributes[attrib];
-			b_magnitude_squared += b.attributes[attrib] * b.attributes[attrib];
+		for (int attrib = 0; attrib < a.attributes.size(); attrib++) {
+			ab_dot_product += a.attributes.get(attrib) * b.attributes.get(attrib);
+			a_magnitude_squared += a.attributes.get(attrib) * a.attributes.get(attrib);
+			b_magnitude_squared += b.attributes.get(attrib) * b.attributes.get(attrib);
 		}
 		double cossim = ab_dot_product/(Math.sqrt(a_magnitude_squared)*Math.sqrt(b_magnitude_squared));
 		return 1 - cossim;
@@ -271,7 +271,6 @@ public class genes {
 		for(int j = 0; j < data.classAttribute().numValues(); j++)
 			genes.classes.put(data.classAttribute().value(j), new Class());
 		for(int i = 1; i < data.numAttributes(); i++) {
-			//attributeType[i] = "nominal";
 			attributeMapping[i] = new HashMap<String, Double>();
 			for(int j = 0; j < data.attribute(i).numValues(); j++)
 				attributeMapping[i].put(data.attribute(i).value(j), (double)j);//((double)j)/(data.attribute(i).numValues() - 1));*/
@@ -385,74 +384,74 @@ public class genes {
 	
 	//The following methods can be used if normalization is necessary.
 	static void altMinMaxNorm(ArrayList<Record> tests, ArrayList<Record> trains) {
-		int numAttribs = tests.get(0).attributes.length;
-		assert(trains.get(0).attributes.length == numAttribs);
+		int numAttribs = tests.get(0).attributes.size();
+		assert(trains.get(0).attributes.size() == numAttribs);
 		
 		for(int i = 0; i < numAttribs; i++) {
 			double min = 20, max = 16000;
 			double range = max - min;
 			for(Record r : trains) {
-				if(range == 0) r.attributes[i] = 0.5;
-				else r.attributes[i] =  (r.attributes[i] - min)/range;
+				if(range == 0) r.attributes.set(i, 0.5);
+				else r.attributes.set(i,  (r.attributes.get(i) - min)/range);
 
-				assert((r.attributes[i] >= 0.0) && (r.attributes[i] <= 1.0));
+				assert((r.attributes.get(i) >= 0.0) && (r.attributes.get(i) <= 1.0));
 			}
 			for(Record r : tests) {
-				if(range == 0) r.attributes[i] = 0.5;
-				else r.attributes[i] =  (r.attributes[i] - min)/range;
+				if(range == 0) r.attributes.set(i, 0.5);
+				else r.attributes.set(i,  (r.attributes.get(i) - min)/range);
 
-				assert((r.attributes[i] >= 0.0) && (r.attributes[i] <= 1.0));
+				assert((r.attributes.get(i) >= 0.0) && (r.attributes.get(i) <= 1.0));
 			}
 		}
 	}
 	
 	static void minMaxNorm(ArrayList<Record> tests, ArrayList<Record> trains) {
-		int numAttribs = tests.get(0).attributes.length;
-		assert(trains.get(0).attributes.length == numAttribs);
+		int numAttribs = tests.get(0).attributes.size();
+		assert(trains.get(0).attributes.size() == numAttribs);
 		
 		for(int i = 0; i < numAttribs; i++) {
 			double min = Double.POSITIVE_INFINITY, max = Double.NEGATIVE_INFINITY;
 			for(Record r : trains) {
-				if(r.attributes[i] <= min) min = r.attributes[i];
-				if(r.attributes[i] >= max) max = r.attributes[i];
+				if(r.attributes.get(i) <= min) min = r.attributes.get(i);
+				if(r.attributes.get(i) >= max) max = r.attributes.get(i);
 			}
 			for(Record r : tests) {
-				if(r.attributes[i] <= min) min = r.attributes[i];
-				if(r.attributes[i] >= max) max = r.attributes[i];
+				if(r.attributes.get(i) <= min) min = r.attributes.get(i);
+				if(r.attributes.get(i) >= max) max = r.attributes.get(i);
 			}
 			double range = max - min;
 			for(Record r : trains) {
-				if(range == 0) r.attributes[i] = 0.5;
-				else r.attributes[i] =  (r.attributes[i] - min)/range;
+				if(range == 0) r.attributes.set(i, 0.5);
+				else r.attributes.set(i,  (r.attributes.get(i) - min)/range);
 
-				assert((r.attributes[i] >= 0.0) && (r.attributes[i] <= 1.0));
+				assert((r.attributes.get(i) >= 0.0) && (r.attributes.get(i) <= 1.0));
 			}
 			for(Record r : tests) {
-				if(range == 0) r.attributes[i] = 0.5;
-				else r.attributes[i] =  (r.attributes[i] - min)/range;
+				if(range == 0) r.attributes.set(i, 0.5);
+				else r.attributes.set(i,  (r.attributes.get(i) - min)/range);
 
-				assert((r.attributes[i] >= 0.0) && (r.attributes[i] <= 1.0));
+				assert((r.attributes.get(i) >= 0.0) && (r.attributes.get(i) <= 1.0));
 			}
 		}
 	}
 	
 	//Doesn't work :(
 	static void zscoreNorm(ArrayList<Record> tests, ArrayList<Record> trains) {
-		int numAttribs = tests.get(0).attributes.length;
-		assert(trains.get(0).attributes.length == numAttribs);
+		int numAttribs = tests.get(0).attributes.size();
+		assert(trains.get(0).attributes.size() == numAttribs);
 		
 		for(int i = 0; i < numAttribs; i++) {
 			double sum = 0;
-			for(Record r : trains) sum += r.attributes[i];
+			for(Record r : trains) sum += r.attributes.get(i);
 			double mean = sum / trains.size();
 			sum = 0;
-			for(Record r : trains) sum += (r.attributes[i] - mean)*(r.attributes[i] - mean);
+			for(Record r : trains) sum += (r.attributes.get(i) - mean)*(r.attributes.get(i) - mean);
 			double stddev = Math.sqrt(sum/(trains.size() - 1));
 			
 			for(Record r : trains)
-				r.attributes[i] = (r.attributes[i] - mean)/stddev;
+				r.attributes.set(i, (r.attributes.get(i) - mean)/stddev);
 			for(Record r : tests)
-				r.attributes[i] = (r.attributes[i] - mean)/stddev;
+				r.attributes.set(i, (r.attributes.get(i) - mean)/stddev);
 		}
 	}
 }
