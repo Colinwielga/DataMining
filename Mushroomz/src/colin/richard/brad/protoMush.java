@@ -80,6 +80,12 @@ public class protoMush{
 		return results;
 		
 	}
+	static double lgBase(int n, double x){
+		if (x == 0)
+			return 0;
+		else 
+			return Math.log(x)/Math.log(n);
+	}
 }
 
 
@@ -133,29 +139,72 @@ class DTI{
 	abstract class Analysis{
 		
 		//counts how many times an attribute value occurs
-		int count(int index, String val){
+		int count(String val){
 			int result = 0;
 			for (String[] s : attributes){
-				if (s[index].equals(val))
-					result++;
+				for (int i = 0; i < s.length; i++){
+					if (s[i].equals(val)){
+						result++;
+					}
+				}
 			}
 			return result;
 		}
 		
-		double analyze(ArrayList<String[]> combo, ArrayList<Record> dataSect){
-			//analyzes the combination for this section of the Data
-			
-			return -1.0;
-		}
-		
-		
+		abstract double analyze(String[] branch, ArrayList<Record> dataSet);
 		
 	}
 	//override some math
-	class GiniIndex extends Analysis{}
-	class Entropy extends Analysis{}
+	class GiniIndex extends Analysis{
+		double analyze(String[] branch, ArrayList<Record> dataSet){
+			int dataSize = dataSet.size();
+			double sum = 0;
+			int counter = 0;
+			
+			for (int i = 0; i < branch.length; i++){ //parse through that branch
+				counter += count(branch[i]); //and add the count of how many times the ith value of that branch appears in the data
+				sum += Math.pow(((double)counter)/((double)dataSize), 2);	
+			}
+			return 1.0 - sum;
+		}
+	}
+	
+	class GiniSplit extends GiniIndex{
+		double analyze(ArrayList<String[]> combo, ArrayList<ArrayList<Record>> dataSubs){
+			double GI; //Gini indices
+			double sum = 0.0;
+			int counter = 0;
+			int dataSize = 0; //size of the data we're dealing with at the entire node
+			for (ArrayList<Record> r : dataSubs){
+				dataSize += r.size(); //yeah it's silly, but good for generalization
+			}
+			for (String[] s : combo){//for each branch in the node
+				for (int i = 0; i < s.length; i++){ //iterate through the branch
+					counter += count(s[i]); //count how many records are at the branch
+				}
+				GI = super.analyze(s, dataSubs.get(combo.indexOf(s))); //check the GiniIndex at that branch, for the data subset that branch covers
+				sum += (counter/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+			}
+			return sum;//return the sum
+		}
+	}
+	class Entropy extends Analysis{
+		double analyze(String[] branch, ArrayList<Record> dataSet){
+			double dataSize = (double)dataSet.size();
+			double sum = 0;
+			double counter = 0;
+			
+			for (int i = 0; i < branch.length; i++){ //parse through that branch
+				counter += count(branch[i]); //and add the count of how many times the ith value of that branch appears in the data
+				sum += (counter/dataSize)*protoMush.lgBase(2,counter/dataSize);	
+			}
+			return -sum;
+		}
+	}
 	class InfoGain extends Entropy{}
-	class SplitInfo extends Analysis{}
+	class SplitInfo extends Analysis{
+		
+	}
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
 	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
@@ -406,4 +455,3 @@ class DTI{
 }
 
 
-//DistanceMetric and its derivatives, pirated from Richard's code
