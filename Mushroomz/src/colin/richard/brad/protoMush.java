@@ -3,13 +3,13 @@ package colin.richard.brad;
 import java.io.*;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.text.DecimalFormat;
+//import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+//import java.util.Collections;
+//import java.util.Comparator;
+//import java.util.HashMap;
+//import java.util.Map;
 
 import org.paukov.combinatorics.Factory;
 import org.paukov.combinatorics.Generator;
@@ -47,8 +47,8 @@ public class protoMush{
 		return records;
 	}
 	
-	static ArrayList<ArrayList> parseAttributes(String fileName) throws IOException{
-		ArrayList<ArrayList> results = new ArrayList<ArrayList>();
+	static ArrayList<ArrayList<String>> parseAttributes(String fileName) throws IOException{
+		ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
 		
 		BufferedReader inputStream = new BufferedReader(new FileReader(fileName));
 		//we need the attributes section
@@ -75,10 +75,12 @@ public class protoMush{
 				toAdd.add(temp[i]);
 				}
 			results.add(toAdd);
+			inputStream.close();
 		}	
 		//results will contain all of the arrayLists for the attributes
 		//each attribute's arrayList will contain its name and its values as strings
 		return results;
+		
 	}
 }
 
@@ -123,8 +125,8 @@ class DTI{
 	}
 	
 	void run() throws IOException{
-		ArrayList<ArrayList> allAttributes = protoMush.parseAttributes("filename");
-		Tree initial = new Tree(allAttributes);
+		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes("filename");
+		Tree initial = new Tree(allAttributes, dataSet, new GiniIndex());
 	}
 	
 	//dunno if I should have this
@@ -157,24 +159,24 @@ class DTI{
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
 	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
-	ArrayList<ArrayList> establishHierarchy(Analysis chief, ArrayList<ArrayList> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
+	ArrayList<String[]> establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
 		
 		allAttributes.remove(0); //we don't want to deal with the class
 		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
-		ArrayList<ArrayList> besties = new ArrayList<ArrayList>(allAttributes.size()); //this will hold the best split for each attribute
+		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
 		
-		for (ArrayList attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
+		for (ArrayList<String> attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
 		
-		for (ArrayList attr : allAttributes){ //for each attribute in allAttributes
+		for (ArrayList<String> attr : allAttributes){ //for each attribute in allAttributes
 			String [] attrCast = new String[attr.size()]; 
 			attr.toArray(attrCast); //put the attribute's values in the array attrCast
 			
-			ArrayList<ArrayList> poss = possibleCombinations (attrCast, 2); //poss contains all possible splits on the attribute
+			ArrayList<ArrayList<String[]>> poss = possibleCombinations (attrCast, 2); //poss contains all possible splits on the attribute
 			
 			double bestAnalysis = -666666.666666; //all hail s@an
 			ArrayList<String[]> bestSplit = new ArrayList<String[]>();
 			
-			for (ArrayList p : poss){ //for each possible split on the attribute, we're checking for the best
+			for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
 				double dummy = chief.analyze(p, data); //check the analysis of that split
 				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
 					bestAnalysis = dummy;
@@ -195,7 +197,7 @@ class DTI{
 			
 		}
 		
-		ArrayList results = new ArrayList<ArrayList>();
+		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		double best = -666666.666666;
 		int indexOfBest = -1;
 		//while (analBesties.size() > 0){
@@ -226,19 +228,19 @@ class DTI{
 		
 	}
 	
-	ArrayList<Record> findUsedData(ArrayList<String[]> givenNode){
+	ArrayList<Record> findUsedData(String[] givenNode){
 		return null;
 	}
 	
-	ArrayList<ArrayList> findUnusedAttributes(ArrayList<String[]> givenNode){
+	ArrayList<ArrayList<String>> findUnusedAttributes(String[] givenNode){
 		return null;
 	}
 	
 	//generates all possible combinations for an array
-	ArrayList<ArrayList> possibleCombinations(String [] attr, int n){
+	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n){
 		
 		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
-		   ArrayList<ArrayList> results = new ArrayList<ArrayList>();
+		   ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		   ArrayList<String[]> results2 = new ArrayList<String[]>();
 		   // Create a complex-combination generator
 		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n, false, true);
@@ -265,13 +267,13 @@ class DTI{
 	//this class does a lot of stuff
 	class Tree{
 		
-		ArrayList<ArrayList> attrs;
+		ArrayList<ArrayList<String>> attrs;
 		ArrayList<Record> data;
 		
 		ArrayList<Tree> nodes = new ArrayList<Tree>();
 		
 		//takes the attributes this tray can possibly cover, the data it covers, and the type of analysis
-		Tree(ArrayList<ArrayList> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
+		Tree(ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
 			attrs = allAttributes;
 			data = d;
 			build(h);
@@ -283,11 +285,11 @@ class DTI{
 		//this is recursive in a way...
 		void build(Analysis w) throws IOException{
 			
-			ArrayList<ArrayList> split = establishHierarchy(w, attrs, data);
+			ArrayList<String[]> split = establishHierarchy(w, attrs, data);
 			for (int i = 0; i < split.size(); i++){
-				ArrayList<String[]> branch = split.get(i);
+				String[] branch = split.get(i);
 				ArrayList<Record> d = findUsedData(branch);
-				ArrayList<ArrayList> a = findUnusedAttributes(branch);
+				ArrayList<ArrayList<String>> a = findUnusedAttributes(branch);
 				Tree node = new Tree(a, d, w);
 				nodes.add(node);
 			}
