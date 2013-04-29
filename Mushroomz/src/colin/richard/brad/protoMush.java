@@ -228,13 +228,7 @@ class DTI{
 		
 	}
 	
-	ArrayList<Record> findUsedData(String[] givenNode){
-		return null;
-	}
 	
-	ArrayList<ArrayList<String>> findUnusedAttributes(String[] givenNode){
-		return null;
-	}
 	
 	//generates all possible combinations for an array
 	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n){
@@ -269,6 +263,7 @@ class DTI{
 		
 		ArrayList<ArrayList<String>> attrs;
 		ArrayList<Record> data;
+		Analysis measure;
 		
 		ArrayList<Tree> nodes = new ArrayList<Tree>();
 		
@@ -276,6 +271,7 @@ class DTI{
 		Tree(ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
 			attrs = allAttributes;
 			data = d;
+			measure = h;
 			build(h);
 		}
 		
@@ -284,7 +280,6 @@ class DTI{
 		//adds them as trees
 		//this is recursive in a way...
 		void build(Analysis w) throws IOException{
-			
 			ArrayList<String[]> split = establishHierarchy(w, attrs, data);
 			for (int i = 0; i < split.size(); i++){
 				String[] branch = split.get(i);
@@ -296,11 +291,53 @@ class DTI{
 			
 		}
 		
+		ArrayList<Record> findUsedData(String[] givenNode){
+			ArrayList<Record> results = new ArrayList<Record>();
+			for (Record r : data){
+				for (String s : givenNode){
+					if(r.equals(s)){
+						results.add(r);
+					}
+				}
+			}
+			return results;
+		}
 		
+		ArrayList<ArrayList<String>> findUnusedAttributes(String[] givenNode){
+			ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
+			boolean test = false;
+			for (ArrayList<String> a : attrs){
+				for (String s1 : a){
+					if(test){break;}
+					for (String s2 : givenNode){
+						if (s2.equals(s1)){
+							test = true;
+							results.add(a);
+							break;
+						}
+					}
+				}
+			}
+			return results;
+		}
 		
+		boolean isPure(String[] node){
+			ArrayList<Record> d = findUsedData(node);
+			String c = d.get(0).classname;
+			for (Record r : d){
+				if(!(r.classname.equals(c))){
+					return false;
+				}
+			}
+			return true;
+		}
 		
 		//yay toString - I want a nice visual of the tree
 		public String toString(){return "";}
+		
+		ArrayList<String[]> splitAtThisLevel() throws IOException{
+			return establishHierarchy(measure, attrs, data);
+		}
 		
 		//yeah - that
 		int findAttributeNode(String attribute){return -1;}
@@ -311,8 +348,30 @@ class DTI{
 		//same as above but stupider
 		void prune(ArrayList<Record> node){nodes.remove(node);}
 		
-		//the test
-		String assignClassTo(Record r){return null;}
+		//traverses
+		String assignClassTo(Record r) throws IOException{
+			String[] theseAttributes = r.attributes;
+			for (Tree t: nodes){
+				String[] leader;
+				String[] s1 = t.splitAtThisLevel().get(0);
+				String[] s2 = t.splitAtThisLevel().get(1);
+				for(String test : s1){
+					for(String a : theseAttributes){
+						if(a.equals(test)){
+							leader = s1;
+						}
+					}
+				}
+				for(String test : s2){
+					for(String a : theseAttributes){
+						if(a.equals(test)){
+							leader = s2;
+						}
+					}
+				}
+			}
+			return " ";
+		}
 	}
 	
 	//pretty much just conglomerates test results
