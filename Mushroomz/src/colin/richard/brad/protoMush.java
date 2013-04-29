@@ -19,19 +19,26 @@ import org.paukov.combinatorics.util.*;
 //that's pretty much it
 public class protoMush{
 	public static ArrayList<Record> dataSet;
-	
-	public protoMush(File in) throws IOException{
+	public static ArrayList<Record> testingDataSet;
+	static File inputTrain;
+	static File inputTest;
+	public protoMush(String in, String inTest) throws IOException{
 		dataSet = parseArff(in.toString());
+		testingDataSet = parseArff(inTest.toString());
+		inputTrain = new File(in);
+		inputTest = new File(inTest);
 	}
 	
 	public static void main (String [] args) throws IOException{
 		//run parseArff/parseAttributes
 		
-		DTI dRunner = new DTI(dataSet);
+		protoMush mushy = new protoMush("mushrooms.train.arff", "mushrooms.test.arff"); 
+		DTI dRunner = new DTI(dataSet, testingDataSet);
 		dRunner.run();
 		//run DTI
 		//run KNN
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
+		
 	}
 	
 	static ArrayList<Record> parseArff(String fileName) throws IOException {
@@ -54,7 +61,9 @@ public class protoMush{
 		BufferedReader inputStream = new BufferedReader(new FileReader(fileName));
 		//we need the attributes section
 		String in = inputStream.readLine();
-		while (in.indexOf("@attribute") == -1);
+		while (in.indexOf("@attribute") == -1){
+			in = inputStream.readLine();
+		}
 		
 		//while in the attributes section
 		while (in.indexOf("@attribute") != -1){
@@ -76,10 +85,11 @@ public class protoMush{
 				toAdd.add(temp[i]);
 				}
 			results.add(toAdd);
-			inputStream.close();
+			in = inputStream.readLine();
 		}	
 		//results will contain all of the arrayLists for the attributes
 		//each attribute's arrayList will contain its name and its values as strings
+		inputStream.close();
 		return results;
 		
 	}
@@ -104,7 +114,7 @@ class Record {
 	
 	Record(String line) {
 		String[] fields = line.split(",");
-		
+		attributes = fields;
 		//Globally keep track of class names so we can properly form confusion matrices, and so we know how many graphs to plot
 		classname = fields[0];
 		
@@ -114,8 +124,15 @@ class Record {
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI{
-	//constructor just instantiates variables
-	public DTI(ArrayList<Record> data){
+	//constructor just instantiates fields, which may be redundant at this point
+	ArrayList<Record> dataSet;
+	ArrayList<String[]> attributes;
+	ArrayList<String> classes;
+	ArrayList<Record> testSet;
+	ArrayList<String> evaluations;
+	
+	
+	public DTI(ArrayList<Record> data, ArrayList<Record> tests){
 		dataSet = data;
 		ArrayList<String[]> att = new ArrayList<String[]>();
 		ArrayList<String> eval = new ArrayList<String>();
@@ -124,6 +141,7 @@ class DTI{
 			att.add(r.attributes);
 			c.add(r.classname);
 		}
+		testSet = tests;
 		for (Record r :testSet){
 			eval.add(r.classname);
 		}
@@ -132,14 +150,8 @@ class DTI{
 		classes = c;
 	}
 
-	ArrayList<Record> dataSet;
-	ArrayList<String[]> attributes;
-	ArrayList<String> classes;
-	ArrayList<Record> testSet;
-	ArrayList<String> evaluations;
-	
 	void run() throws IOException{
-		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes("filename");
+		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes(protoMush.inputTrain.toString());
 		Tree initial = new Tree(allAttributes, dataSet, new GiniSplit());
 		ArrayList<String> s = predictClasses(testSet, initial);
 		int COUNT_OUR_SUCCESS = 0;
@@ -156,6 +168,7 @@ class DTI{
 				ArrayList<Record> results = new ArrayList<Record>();
 				boolean test = false;
 				for (Record r : dataSet){ //for each record in the trainingSet
+					if(r.attributes == null){break;}
 					for (String s : r.attributes){ //look through r's attributes
 						if(test){break;}//if we've already added the record...
 						for(String s2 : branch){//look through the values in the branch
@@ -176,6 +189,7 @@ class DTI{
 		
 		//counts how many times an attribute value occurs
 		int count(String val){
+			if(attributes == null){return 0;}
 			int result = 0;
 			for (String[] s : attributes){
 				for (int i = 0; i < s.length; i++){
@@ -298,9 +312,12 @@ class DTI{
 	ArrayList<String[]> establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
 		
 		allAttributes.remove(0); //we don't want to deal with the class
-		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
-		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
-		
+		ArrayList<Double> analBesties = new ArrayList<Double>(); //this will hold the best analysis for each attribute
+		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(); //this will hold the best split for each attribute
+		for (int i = 0; i < allAttributes.size(); i++){
+			analBesties.add(null);
+			besties.add(null);
+		}
 		for (ArrayList<String> attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
 		
 		for (ArrayList<String> attr : allAttributes){ //for each attribute in allAttributes
@@ -317,6 +334,7 @@ class DTI{
 				for (String [] s : p){
 					DDDD.add(findUsedData(s));
 				}
+				
 				double dummy = chief.analyze(p, DDDD); //check the analysis of that split
 				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
 					bestAnalysis = dummy;
