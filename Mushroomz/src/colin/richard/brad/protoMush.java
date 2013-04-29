@@ -179,6 +179,7 @@ class DTI{
 							}
 							test = false;//if we reach this point, we haven't added the record, keep checking
 						}
+						test = false;
 					}
 				}
 				return results;//yeah
@@ -314,7 +315,7 @@ class DTI{
 		allAttributes.remove(0); //we don't want to deal with the class
 		ArrayList<Double> analBesties = new ArrayList<Double>(); //this will hold the best analysis for each attribute
 		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(); //this will hold the best split for each attribute
-		for (int i = 0; i < allAttributes.size(); i++){
+		for (int i = 0; i <= allAttributes.size(); i++){
 			analBesties.add(null);
 			besties.add(null);
 		}
@@ -349,7 +350,7 @@ class DTI{
 					bestSplit = p;
 				}
 			}
-			
+			int testy = allAttributes.indexOf(attr);
 			analBesties.set(allAttributes.indexOf(attr), bestAnalysis); //store the best analysis for this attribute
 			besties.set(allAttributes.indexOf(attr), bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
 			
@@ -398,8 +399,9 @@ class DTI{
 		   String[] r;
 		   List<String> a1;
 		   // Iterate through the different combinations
+		   ArrayList<String[]> results2 = null;
 		   for (ICombinatoricsVector<ICombinatoricsVector<String>> comb : gen) {
-			  ArrayList<String[]> results2 = new ArrayList<String[]>();
+			  results2 = new ArrayList<String[]>();
 			  //Iterate through the individual parts of the combination
 			  for (ICombinatoricsVector<String> v : comb){
 				  a1 = v.getVector(); //this might be redundant
@@ -409,6 +411,7 @@ class DTI{
 			  }
 			  
 			  results.add(results2); //add the array of arrays to another array
+			  results2 = null;
 		   }
 		   return results;
 		   //so, basically, what this looks like is, an array with many arrays in it
