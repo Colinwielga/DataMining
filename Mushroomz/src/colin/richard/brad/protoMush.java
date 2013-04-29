@@ -321,8 +321,8 @@ class DTI{
 			return results;
 		}
 		
-		boolean isPure(String[] node){
-			ArrayList<Record> d = findUsedData(node);
+		boolean isPure(String[] branch){
+			ArrayList<Record> d = findUsedData(branch);
 			String c = d.get(0).classname;
 			for (Record r : d){
 				if(!(r.classname.equals(c))){
@@ -332,15 +332,16 @@ class DTI{
 			return true;
 		}
 		
-		//yay toString - I want a nice visual of the tree
-		public String toString(){return "";}
+		String getClass(String[] branch){
+			if(isPure(branch)){
+				return findUsedData(branch).get(0).classname;
+			}
+			return null;
+		}
 		
 		ArrayList<String[]> splitAtThisLevel() throws IOException{
 			return establishHierarchy(measure, attrs, data);
 		}
-		
-		//yeah - that
-		int findAttributeNode(String attribute){return -1;}
 		
 		//deletes a node and its children - ick maybe not good stuff happening
 		void prune(int nodeIndex){nodes.remove(nodeIndex);}
@@ -348,34 +349,43 @@ class DTI{
 		//same as above but stupider
 		void prune(ArrayList<Record> node){nodes.remove(node);}
 		
-		//traverses
+		//traverses recursively
 		String assignClassTo(Record r) throws IOException{
 			String[] theseAttributes = r.attributes;
+			String result;
 			for (Tree t: nodes){
-				String[] leader;
 				String[] s1 = t.splitAtThisLevel().get(0);
 				String[] s2 = t.splitAtThisLevel().get(1);
+				
 				for(String test : s1){
 					for(String a : theseAttributes){
 						if(a.equals(test)){
-							leader = s1;
+							if (isPure(s1)){
+								return getClass(s1);
+							}
+							result = t.nodes.get(0).assignClassTo(r);
 						}
 					}
 				}
 				for(String test : s2){
 					for(String a : theseAttributes){
 						if(a.equals(test)){
-							leader = s2;
+							if(isPure(s2)){
+								return getClass(s2);
+							}
+							result = t.nodes.get(1).assignClassTo(r);
 						}
 					}
 				}
+				
 			}
-			return " ";
+			result = null;
+			return result;
 		}
 	}
 	
 	//pretty much just conglomerates test results
-	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree){
+	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree) throws IOException{
 		ArrayList<String> results = new ArrayList<String>();
 		for (Record r : testSet){
 			results.add(decisionTree.assignClassTo(r));
