@@ -1,8 +1,6 @@
 package colin.richard.brad;
 
 import java.io.*;
-import java.io.BufferedReader;
-import java.io.IOException;
 //import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +18,17 @@ import org.paukov.combinatorics.util.*;
 
 //that's pretty much it
 public class protoMush{
-	public ArrayList<Record> dataSet;
+	public static ArrayList<Record> dataSet;
 	
-	public protoMush(File in){}
+	public protoMush(File in) throws IOException{
+		dataSet = parseArff(in.toString());
+	}
 	
-	public static void main(String [] args){
+	public static void main (String [] args) throws IOException{
 		//run parseArff/parseAttributes
+		
+		DTI dRunner = new DTI(dataSet);
+		dRunner.run();
 		//run DTI
 		//run KNN
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
@@ -111,29 +114,62 @@ class Record {
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI{
-	ArrayList<Record> dataSet;
-	ArrayList<String[]> attributes;
-	ArrayList<String> classes;
-	ArrayList<Record> testSet;
-	
 	//constructor just instantiates variables
 	public DTI(ArrayList<Record> data){
 		dataSet = data;
 		ArrayList<String[]> att = new ArrayList<String[]>();
+		ArrayList<String> eval = new ArrayList<String>();
 		ArrayList<String> c = new ArrayList<String>();
 		for (Record r : dataSet){
 			att.add(r.attributes);
 			c.add(r.classname);
 		}
+		for (Record r :testSet){
+			eval.add(r.classname);
+		}
 		attributes = att;
+		evaluations = eval;
 		classes = c;
 	}
+
+	ArrayList<Record> dataSet;
+	ArrayList<String[]> attributes;
+	ArrayList<String> classes;
+	ArrayList<Record> testSet;
+	ArrayList<String> evaluations;
 	
 	void run() throws IOException{
 		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes("filename");
-		Tree initial = new Tree(allAttributes, dataSet, new GiniIndex());
+		Tree initial = new Tree(allAttributes, dataSet, new GiniSplit());
 		ArrayList<String> s = predictClasses(testSet, initial);
+		int COUNT_OUR_SUCCESS = 0;
+		for (String s2 : s){
+			if (s2.equals(evaluations.get(s.indexOf(s2)))){
+				COUNT_OUR_SUCCESS++;
+			}
+		}
+		System.out.print(COUNT_OUR_SUCCESS);
 	}
+	
+	//returns the data which a branch applies to
+			public ArrayList<Record> findUsedData(String[] branch){
+				ArrayList<Record> results = new ArrayList<Record>();
+				boolean test = false;
+				for (Record r : dataSet){ //for each record in the trainingSet
+					for (String s : r.attributes){ //look through r's attributes
+						if(test){break;}//if we've already added the record...
+						for(String s2 : branch){//look through the values in the branch
+							if (s2.equals(s)){//if something matches up
+								results.add(r); //add the record
+								test = true; //note, we can stop looking through this record
+								break; //break the loop for the branch
+							}
+							test = false;//if we reach this point, we haven't added the record, keep checking
+						}
+					}
+				}
+				return results;//yeah
+			}
 	
 	//dunno if I should have this
 	abstract class Analysis{
@@ -152,10 +188,10 @@ class DTI{
 		}
 		
 		abstract double analyze(String[] branch, ArrayList<Record> dataSet);
-		
+		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
 	}
 	//override some math
-	class GiniIndex extends Analysis{
+	abstract class GiniIndex extends Analysis{
 		double analyze(String[] branch, ArrayList<Record> dataSet){
 			int dataSize = dataSet.size();
 			double sum = 0;
@@ -167,6 +203,7 @@ class DTI{
 			}
 			return 1.0 - sum;
 		}
+		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
 	}
 	
 	class GiniSplit extends GiniIndex{
@@ -188,7 +225,7 @@ class DTI{
 			return sum;//return the sum
 		}
 	}
-	class Entropy extends Analysis{
+	abstract class Entropy extends Analysis{
 		double analyze(String[] branch, ArrayList<Record> dataSet){
 			double dataSize = (double)dataSet.size();
 			double sum = 0;
@@ -200,10 +237,60 @@ class DTI{
 			}
 			return -sum;
 		}
+		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
 	}
-	class InfoGain extends Entropy{}
+	class InfoGain extends Entropy{
+		double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs){
+			int sizeOfStuff = 0;
+			double counter = 0.0;
+			double E;
+			double sum = 0.0;
+			
+			for (String[] s : combos){
+				sizeOfStuff += s.length;
+			}
+			String[] allData = new String[sizeOfStuff];
+			int placeHolder = 0;
+			for (String [] s : combos){
+				for (int i = 0 + placeHolder; i < s.length; i++){
+					allData[i] = s[i];
+				}
+				placeHolder = s.length - 1;
+			}
+			double parent = super.analyze(allData, dataSet);
+			
+			for (String[] s : combos){//for each branch in the node
+				for (int i = 0; i < s.length; i++){ //iterate through the branch
+					counter += count(s[i]); //count how many records are at the branch
+				}
+				E = super.analyze(s, dataSubs.get(combos.indexOf(s))); //check the GiniIndex at that branch, for the data subset that branch covers
+				sum += (counter/dataSet.size()) * E; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+			}
+			
+			return parent - sum;
+		}
+	}
+	
 	class SplitInfo extends Analysis{
 		
+		double analyze(String[] branch, ArrayList<Record> dataSubs){
+			return -1.0;
+		}
+		double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs){
+			double counter = 0.0;
+			double sum = 0.0;
+			double j = 0.0;
+			for (ArrayList<Record> a : dataSubs){
+				j += a.size();
+			}
+			for (String[] s : combos){//for each branch in the node
+				for (int i = 0; i < s.length; i++){ //iterate through the branch
+					counter += count(s[i]); //count how many records are at the branch
+				}
+				sum += (counter/j) * protoMush.lgBase(2,(counter/j)); //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+			}
+			return -sum;
+		}
 	}
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
@@ -226,7 +313,11 @@ class DTI{
 			ArrayList<String[]> bestSplit = new ArrayList<String[]>();
 			
 			for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
-				double dummy = chief.analyze(p, data); //check the analysis of that split
+				ArrayList<ArrayList<Record>> DDDD = new ArrayList<ArrayList<Record>>();
+				for (String [] s : p){
+					DDDD.add(findUsedData(s));
+				}
+				double dummy = chief.analyze(p, DDDD); //check the analysis of that split
 				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
 					bestAnalysis = dummy;
 					bestSplit = p;
@@ -339,25 +430,7 @@ class DTI{
 			}	
 		}
 		
-		//returns the data which a branch applies to
-		ArrayList<Record> findUsedData(String[] branch){
-			ArrayList<Record> results = new ArrayList<Record>();
-			boolean test = false;
-			for (Record r : data){ //for each record in the trainingSet
-				for (String s : r.attributes){ //look through r's attributes
-					if(test){break;}//if we've already added the record...
-					for(String s2 : branch){//look through the values in the branch
-						if (s2.equals(s)){//if something matches up
-							results.add(r); //add the record
-							test = true; //note, we can stop looking through this record
-							break; //break the loop for the branch
-						}
-						test = false;//if we reach this point, we haven't added the record, keep checking
-					}
-				}
-			}
-			return results;//yeah
-		}
+		
 		
 		//returns attributes unused by the branch
 		ArrayList<ArrayList<String>> findUnusedAttributes(String[] branch){
