@@ -393,13 +393,13 @@ class DTI{
 		
 		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
 		   ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
-		   ArrayList<String[]> results2 = new ArrayList<String[]>();
 		   // Create a complex-combination generator
 		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n, false, true);
 		   String[] r;
 		   List<String> a1;
 		   // Iterate through the different combinations
 		   for (ICombinatoricsVector<ICombinatoricsVector<String>> comb : gen) {
+			  ArrayList<String[]> results2 = new ArrayList<String[]>();
 			  //Iterate through the individual parts of the combination
 			  for (ICombinatoricsVector<String> v : comb){
 				  a1 = v.getVector(); //this might be redundant
