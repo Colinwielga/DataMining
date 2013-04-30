@@ -4,6 +4,7 @@ import java.io.*;
 //import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 //import java.util.Collections;
 //import java.util.Comparator;
@@ -153,8 +154,8 @@ class DTI{
 
 	void run() throws IOException{
 		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes(protoMush.inputTrain.toString());
-		Tree initial = new Tree(allAttributes, dataSet, new GiniSplit());
-		ArrayList<String> s = predictClasses(testSet, initial);
+		Tree decisionTree = new Tree(allAttributes, dataSet, new GiniSplit());
+		ArrayList<String> s = predictClasses(testSet, decisionTree);
 		int COUNT_OUR_SUCCESS = 0;
 		for (String s2 : s){
 			if (s2.equals(evaluations.get(s.indexOf(s2)))){
@@ -165,26 +166,15 @@ class DTI{
 	}
 	
 	//returns the data which a branch applies to
-			public ArrayList<Record> findUsedData(String[] branch){
-				ArrayList<Record> results = new ArrayList<Record>();
-				boolean test = false;
-				for (Record r : dataSet){ //for each record in the trainingSet
-					if(r.attributes == null){break;}
-					for (String s : r.attributes){ //look through r's attributes
-						if(test){break;}//if we've already added the record...
-						for(String s2 : branch){//look through the values in the branch
-							if (s2.equals(s)){//if something matches up
-								results.add(r); //add the record
-								test = true; //note, we can stop looking through this record
-								break; //break the loop for the branch
-							}
-							test = false;//if we reach this point, we haven't added the record, keep checking
-						}
-						test = false;
-					}
-				}
-				return results;//yeah
-			}
+	public ArrayList<Record> findUsedData(int attrID, String[] branch){
+		HashSet<String> tester = new HashSet<String>(Arrays.asList(branch));
+		ArrayList<Record> results = new ArrayList<Record>();
+		
+		for (Record r : dataSet) //for each record in the trainingSet
+			if(tester.contains(r.attributes[attrID]))
+				results.add(r);
+		return results;//yeah
+	}
 	
 	//dunno if I should have this
 	abstract class Analysis{
@@ -311,9 +301,15 @@ class DTI{
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
 	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
-	ArrayList<String[]> establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
+	int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
+		ArrayList<ArrayList<String>> allAttributesCopy = new ArrayList<ArrayList<String>>(allAttributes.size() - 1);
+		for(int i = 1; i < allAttributes.size(); i++) {
+			allAttributesCopy.add(allAttributes.get(i));
+		}
+		allAttributes = allAttributesCopy;
+		//allAttributes.remove(0); //we don't want to deal with the class
+		//that line would keep removing the first attribute i think..? each level would have one less?
 		
-		allAttributes.remove(0); //we don't want to deal with the class
 		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
 		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
 		for (int i = 0; i < allAttributes.size(); i++){
@@ -336,7 +332,7 @@ class DTI{
 			for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
 				ArrayList<ArrayList<Record>> DDDD = new ArrayList<ArrayList<Record>>();
 				for (String [] s : p){
-					DDDD.add(findUsedData(s));
+					DDDD.add(findUsedData(i, s));
 				}
 				
 				double dummy = chief.analyze(p, DDDD); //check the analysis of that split
@@ -357,7 +353,6 @@ class DTI{
 			besties.set(i, bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
 		}
 		
-		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		double best = -666666.666666;
 		int indexOfBest = -1;
 		//while (analBesties.size() > 0){
@@ -383,14 +378,15 @@ class DTI{
 			if(indexOfBest == -1) {
 				System.out.println("indexOfBest = -1");
 			}
-			results.add(besties.get(indexOfBest)); //add the best split
+		
+		branch = (ArrayList<String[]>)besties.get(indexOfBest).clone(); //add the best split
 			//analBesties.remove(indexOfBest); //remove that attribute's analysis 
 			//besties.remove(indexOfBest); //remove that attribute
 		//}
 		
 		//return results;
 			//results is an array of ArrayLists, in order of best analysis
-		return besties.get(indexOfBest);
+		return indexOfBest;
 			//this is the best split of those remaining attributes		
 	}
 
@@ -473,12 +469,16 @@ class DTI{
 		//adds them as trees
 		//this is recursive
 		void build(Analysis w) throws IOException{
-			ArrayList<String[]> split = establishHierarchy(w, attrs, data);
-			assert( split.size() == 2);
+			ArrayList<String[]> split = new ArrayList<String[]>();
+			int attrID = establishHierarchy(w, attrs, data, split);
+			
+			assert(split.size() == 2);
+			assert(attrID >= 0);
+			
 			for (int i = 0; i < split.size(); i++){ //iterate through each of the children
 				String[] branch = split.get(i); //branch is the array with the attribute values its split on
-				ArrayList<Record> d = findUsedData(branch); //find the data which the split applies to 
-				ArrayList<ArrayList<String>> a = findUnusedAttributes(branch); //find the attributes the split doesn't apply to
+				ArrayList<Record> d = findUsedData(attrID, branch); //find the data which the split applies to 
+				ArrayList<ArrayList<String>> a = findUnusedAttributes(attrID, branch); //find the attributes the split doesn't apply to
 				if(a.size() > 1) {
 					Tree node = new Tree(a, d, w); //create a child tree which works with the same data and unused attributes
 					nodes.add(node); //nodes holds each tree child
@@ -489,27 +489,19 @@ class DTI{
 		
 		
 		//returns attributes unused by the branch
-		ArrayList<ArrayList<String>> findUnusedAttributes(String[] branch){
-			ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
-			boolean test = false;
-			for (ArrayList<String> a : attrs){//for each attribute
-				for (String s1 : a){//for each value for that attribute
-					if(test){break;}//if we've found the attribute, no need to continue looking
-					for (String s2 : branch){//for each value in the array
-						if (s2.equals(s1)){//if an attribute value and array value match
-							test = true;//note we can stop checking, we've found the attribute
-							results.add(a);//add that attribute
-							break;//break
-						}
-					}
-				}
-			}
+		ArrayList<ArrayList<String>> findUnusedAttributes(int attrID, String[] branch){
+			ArrayList<ArrayList<String>> results = (ArrayList<ArrayList<String>>) attrs.clone(); //copy all the attributes from the parent node 
+			
+			results.set(attrID, (ArrayList<String>)results.get(attrID).clone()); //make a new copy of this arraylist because we're going to modify it by removing entries
+			
+			results.get(attrID).removeAll(Arrays.asList(branch));
+
 			return results;
 		}
 		
 		//checks if a branch generated by a split is pure
-		boolean isPure(String[] branch){
-			ArrayList<Record> d = findUsedData(branch); //we work with the data this branch applies to
+		boolean isPure(int attrID, String[] branch){
+			ArrayList<Record> d = findUsedData(attrID, branch); //we work with the data this branch applies to
 			String c = d.get(0).classname; //check the first class in that data subset
 			for (Record r : d){ //for each of the records in that subset
 				if(!(r.classname.equals(c))){ //if one of the classes doesn't match
@@ -520,16 +512,16 @@ class DTI{
 		}
 		
 		//returns the class the branch contains, if it is pure
-		String getClass(String[] branch){
-			if(isPure(branch)){//if the branch is pure
-				return findUsedData(branch).get(0).classname; //the classes will all be the same, return the first
+		String getClass(int attrID, String[] branch) {
+			if(isPure(attrID, branch)) {//if the branch is pure
+				return findUsedData(attrID, branch).get(0).classname; //the classes will all be the same, return the first
 			}
 			return null; //if we've reached this point, the branch isn't pure and will return null
 		}
 		
 		//just accesses establishHierarchy for the tree at this point in the recursion
-		ArrayList<String[]> splitAtThisLevel() throws IOException{
-			return establishHierarchy(measure, attrs, data);
+		int splitAtThisLevel(ArrayList<String[]> branch) throws IOException{
+			return establishHierarchy(measure, attrs, data, branch);
 		}
 		
 		//deletes a child node and its children
@@ -543,34 +535,31 @@ class DTI{
 			String[] theseAttributes = r.attributes; //get this record's attribute values
 			String result; //prepare the result
 			for (Tree t: nodes){ //for each child node
-				String[] s1 = t.splitAtThisLevel().get(0); //get its first branch
-				String[] s2 = t.splitAtThisLevel().get(1); //get its second branch
+				ArrayList<String[]> branch = new ArrayList<String[]>();
+				int attrID = t.splitAtThisLevel(branch);
+				String[] s1 = branch.get(0); //get its first branch
+				String[] s2 = branch.get(1); //get its second branch
 				
-				for(String test : s1){ //for each value in the branch
-					for(String a : theseAttributes){ //for each of these record's values
-						if(a.equals(test)){ //if the values in the branch and record are equal
-							if (isPure(s1)){ //if this branch is pure
-								return getClass(s1); //we've found the class - BASECASE HOORAY
-							}
-							result = t.nodes.get(0).assignClassTo(r); //otherwise, we go deeper on this node
-						}
-					}
-				}//if we reach the second branch, we've passed the first completely and haven't recursed yet
-				for(String test : s2){ //for each value in the branch
-					for(String a : theseAttributes){ //for each of the record's values
-						if(a.equals(test)){ //if the values in the branch and record are equal
-							if(isPure(s2)){ //if this branch is pure
-								return getClass(s2); //we've found the class - BASECASE HOORAY
-							}
-							result = t.nodes.get(1).assignClassTo(r); //otherwise, we go deeper on this node
-						}
-					}
-				}
+				HashSet<String> s1Tester = new HashSet<String>(Arrays.asList(s1)),
+								s2Tester = new HashSet<String>(Arrays.asList(s2));
 				
+				if(s1Tester.contains(theseAttributes[attrID])) {
+					if (isPure(attrID, s1))//if this branch is pure
+						return getClass(attrID, s1); //we've found the class - BASECASE HOORAY
+					else
+						return t.nodes.get(0).assignClassTo(r); //otherwise, we go deeper on this node
+				} else if(s2Tester.contains(theseAttributes[attrID])) {
+					if (isPure(attrID, s2))//if this branch is pure
+						return getClass(attrID, s2); //we've found the class - BASECASE HOORAY
+					else
+						return t.nodes.get(1).assignClassTo(r); //otherwise, we go deeper on this node
+				} else {
+					System.err.println("shouldn't get here");
+					System.exit(-1);
+				}				
 			}
-			result = null; //if we get this far, something's gone wrong. 
-			return result; //this will throw an exception, forcing revision of the code
-		}
+			return "error";
+		}	
 	}
 	
 	//pretty much just conglomerates test results
