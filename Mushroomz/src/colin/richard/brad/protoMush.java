@@ -380,6 +380,9 @@ class DTI{
 					indexOfBest = i;
 				}
 			}
+			if(indexOfBest == -1) {
+				System.out.println("indexOfBest = -1");
+			}
 			results.add(besties.get(indexOfBest)); //add the best split
 			//analBesties.remove(indexOfBest); //remove that attribute's analysis 
 			//besties.remove(indexOfBest); //remove that attribute
@@ -471,12 +474,15 @@ class DTI{
 		//this is recursive
 		void build(Analysis w) throws IOException{
 			ArrayList<String[]> split = establishHierarchy(w, attrs, data);
+			assert( split.size() == 2);
 			for (int i = 0; i < split.size(); i++){ //iterate through each of the children
 				String[] branch = split.get(i); //branch is the array with the attribute values its split on
 				ArrayList<Record> d = findUsedData(branch); //find the data which the split applies to 
 				ArrayList<ArrayList<String>> a = findUnusedAttributes(branch); //find the attributes the split doesn't apply to
-				Tree node = new Tree(a, d, w); //create a child tree which works with the same data and unused attributes
-				nodes.add(node); //nodes holds each tree child
+				if(a.size() > 1) {
+					Tree node = new Tree(a, d, w); //create a child tree which works with the same data and unused attributes
+					nodes.add(node); //nodes holds each tree child
+				}
 			}	
 		}
 		
