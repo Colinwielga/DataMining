@@ -314,9 +314,9 @@ class DTI{
 	ArrayList<String[]> establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data) throws IOException{ //chief is the analysis we're checking with
 		
 		allAttributes.remove(0); //we don't want to deal with the class
-		ArrayList<Double> analBesties = new ArrayList<Double>(); //this will hold the best analysis for each attribute
-		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(); //this will hold the best split for each attribute
-		for (int i = 0; i <= allAttributes.size(); i++){
+		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
+		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
+		for (int i = 0; i < allAttributes.size(); i++){
 			analBesties.add(null);
 			besties.add(null);
 		}
@@ -354,26 +354,29 @@ class DTI{
 			int testy = allAttributes.indexOf(attr);
 			analBesties.set(allAttributes.indexOf(attr), bestAnalysis); //store the best analysis for this attribute
 			besties.set(allAttributes.indexOf(attr), bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
-			
 		}
 		
 		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		double best = -666666.666666;
 		int indexOfBest = -1;
 		//while (analBesties.size() > 0){
-			for (double d : analBesties){
+			for (int i = 0; i < analBesties.size(); i++) {
+				if(analBesties.get(i) == null) {
+					System.out.println("uhoh");
+				}
+				double d = analBesties.get(i);
+
 				if (best == -666666.666666){ //if we're checking for the first time
 					best = d;
-					indexOfBest = analBesties.indexOf(d);
-					
+					indexOfBest = i; //analBesties.indexOf(d); -- this searches through the whole array just to find the index. that's not good.
 				}
 				else if (chief instanceof GiniIndex && d < best){ //if chief is Gini
 					best = d;
-					indexOfBest = analBesties.indexOf(d);
+					indexOfBest = i;
 				}
 				else if(chief instanceof Entropy || chief instanceof InfoGain && d > best){ //if chief is something else
 					best = d;
-					indexOfBest = analBesties.indexOf(d);
+					indexOfBest = i;
 				}
 			}
 			results.add(besties.get(indexOfBest)); //add the best split
@@ -384,8 +387,7 @@ class DTI{
 		//return results;
 			//results is an array of ArrayLists, in order of best analysis
 		return besties.get(indexOfBest);
-			//this is the best split of those remaining attributes
-		
+			//this is the best split of those remaining attributes		
 	}
 
 	//generates all possible combinations for an array
@@ -405,9 +407,9 @@ class DTI{
 			a = new String[result_left.size()];
 			result_left.toArray(a);
 			result.add(a);
-			System.out.println(result_left);
+			//System.out.println(result_left);
 			b = new String[result_right.size()];
-			System.out.println(result_right);
+			//System.out.println(result_right);
 			result_right.toArray(b);
 			result.add(b);
 			results.add(result);
@@ -447,8 +449,7 @@ class DTI{
 	}
 	
 	//this class does a lot of stuff
-	class Tree{
-		
+	class Tree{		
 		ArrayList<ArrayList<String>> attrs;
 		ArrayList<Record> data;
 		Analysis measure;
