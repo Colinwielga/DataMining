@@ -5,6 +5,6 @@
 	<classpathentry kind="lib" path="jcommon.jar"/>
 	<classpathentry kind="lib" path="jfreechart.jar"/>
 	<classpathentry kind="lib" path="weka.jar"/>
-	<classpathentry kind="lib" path="combinatoricslib-2.0.jar"/>
+	<classpathentry kind="lib" path="combinatoricslib-2.0.jar" sourcepath="combinatorics.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

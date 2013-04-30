@@ -3,6 +3,7 @@ package colin.richard.brad;
 import java.io.*;
 //import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 //import java.util.Collections;
 //import java.util.Comparator;
@@ -386,16 +387,42 @@ class DTI{
 			//this is the best split of those remaining attributes
 		
 	}
-	
+
+	//generates all possible combinations for an array
+	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n) {
+		assert(n < 30); //This function (hackily) uses the properties of binary integer operations to partition a set of strings into two subsets, so there should be less elements than there are bits in an int
+		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
+		for(int i = 1; i < 1 << (attr.length - 1); i++) {
+			ArrayList<String[]> result = new ArrayList<String[]>();
+			String[] a, b;
+			ArrayList<String> result_left  = new ArrayList<String>(),
+							  result_right = new ArrayList<String>();
+			for(int j = 0; j < attr.length; j++) {
+				if((i & (1 << j)) != 0) {
+					result_left.add(attr[j]);
+				} else result_right.add(attr[j]);
+			}
+			a = new String[result_left.size()];
+			result_left.toArray(a);
+			result.add(a);
+			System.out.println(result_left);
+			b = new String[result_right.size()];
+			System.out.println(result_right);
+			result_right.toArray(b);
+			result.add(b);
+			results.add(result);
+		}
+		return results;
+	}
 	
 	
 	//generates all possible combinations for an array
-	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n){
+	ArrayList<ArrayList<String[]>> possibleCombinations1(String [] attr, int n){
 		
 		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
 		   ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		   // Create a complex-combination generator
-		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n, false, true);
+		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n);
 		   String[] r;
 		   List<String> a1;
 		   // Iterate through the different combinations
