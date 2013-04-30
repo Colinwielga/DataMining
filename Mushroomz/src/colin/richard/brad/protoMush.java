@@ -322,7 +322,9 @@ class DTI{
 		}
 		for (ArrayList<String> attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
 		
-		for (ArrayList<String> attr : allAttributes){ //for each attribute in allAttributes
+		for (int i = 0; i < allAttributes.size(); i++) { //for each attribute in allAttributes
+			ArrayList<String> attr = allAttributes.get(i);
+			
 			String [] attrCast = new String[attr.size()]; 
 			attr.toArray(attrCast); //put the attribute's values in the array attrCast
 			
@@ -351,9 +353,8 @@ class DTI{
 					bestSplit = p;
 				}
 			}
-			int testy = allAttributes.indexOf(attr);
-			analBesties.set(allAttributes.indexOf(attr), bestAnalysis); //store the best analysis for this attribute
-			besties.set(allAttributes.indexOf(attr), bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
+			analBesties.set(i, bestAnalysis); //store the best analysis for this attribute
+			besties.set(i, bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
 		}
 		
 		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
