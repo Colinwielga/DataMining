@@ -1,28 +1,9 @@
 package colin.richard.brad;
 
 import java.io.*;
-//import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map.Entry;
-//import java.util.Collections;
-//import java.util.Comparator;
-//import java.util.HashMap;
-//import java.util.Map;
+import java.util.*;
 
-import org.paukov.combinatorics.Factory;
-import org.paukov.combinatorics.Generator;
-import org.paukov.combinatorics.ICombinatoricsVector;
-import org.paukov.combinatorics.util.*;
-
-
-
-
-//that's pretty much it
-public class protoMush{
+public class protoMush {
 	public static ArrayList<Record> dataSet;
 	public static ArrayList<Record> testingDataSet;
 	static File inputTrain;
@@ -311,38 +292,6 @@ class DTI{
 		return results;
 	}
 	
-	
-	//generates all possible combinations for an array
-	ArrayList<ArrayList<String[]>> possibleCombinations1(String [] attr, int n){
-		
-		   ICombinatoricsVector<String> vector = Factory.createVector(attr);
-		   ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
-		   // Create a complex-combination generator
-		   Generator<ICombinatoricsVector<String>> gen = new ComplexCombinationGenerator<String>(vector, n);
-		   String[] r;
-		   List<String> a1;
-		   // Iterate through the different combinations
-		   ArrayList<String[]> results2 = null;
-		   for (ICombinatoricsVector<ICombinatoricsVector<String>> comb : gen) {
-			  results2 = new ArrayList<String[]>();
-			  //Iterate through the individual parts of the combination
-			  for (ICombinatoricsVector<String> v : comb){
-				  a1 = v.getVector(); //this might be redundant
-				  r = new String[a1.size()]; //we're going to put it in an array
-				  a1.toArray(r); //here's the array
-				  results2.add(r); //woohoo, add that array to the array of arrays
-			  }
-			  
-			  results.add(results2); //add the array of arrays to another array
-			  results2 = null;
-		   }
-		   return results;
-		   //so, basically, what this looks like is, an array with many arrays in it
-		   //each array in 'results' is an array of String[] arrays
-		   //each String[] contains the individual attribute values
-	}
-	
-	//this class does a lot of stuff
 	class Tree{		
 		ArrayList<ArrayList<String>> attrs;
 		ArrayList<Record> data;

@@ -1,4 +1,4 @@
-package colin.richard.brad;
+package colin.richard.brad.genes;
 
 import java.io.BufferedReader;
 import java.io.File;
