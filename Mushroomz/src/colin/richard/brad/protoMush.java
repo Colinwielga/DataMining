@@ -165,6 +165,7 @@ class DTI{
 			}
 		}
 		System.out.printf("%s/%s", COUNT_OUR_SUCCESS, s.size());
+		decisionTree.print(0);
 	}
 	
 	//dunno if I should have this
@@ -358,6 +359,12 @@ class DTI{
 			}
 			if(d.size() > 5 || (d.size() > 1 && !isPure()))
 				build(h);
+		}
+		
+		void print(int indent) {
+			System.out.println(new String(new char[indent]).replace("\0", "\t") + splitAttr);
+			for(Tree node : nodes)
+				node.print(indent + 1);
 		}
 		
 		//finds the best attribute to split on and its split
