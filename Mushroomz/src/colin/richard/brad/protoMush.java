@@ -44,7 +44,7 @@ public class protoMush{
 		protoMush mushy = new protoMush("mushrooms.train.arff", "mushrooms.test.arff"); 
 		DTI dRunner = new DTI(dataSet, testingDataSet);
 		dRunner.run();
-		Knn knn = new Knn();
+		Knn2 knn = new Knn2();
 		knn.run();
 		//run DTI
 		//run KNN
@@ -162,17 +162,33 @@ class DTI{
 	}
 
 	void run() throws IOException{
+		System.out.println("Running DTI");
+		System.out.println("Training on:" + protoMush.inputTrain.toString());
+		System.out.println("Testing on:" + protoMush.inputTest.toString());
+		System.out.print("Building Tree... Please wait...");
 		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes(protoMush.inputTrain.toString());
 		Tree decisionTree = new Tree(allAttributes, dataSet, new GiniSplit());
+		System.out.println();
+		System.out.print("Traversing Tree... Please wait...");
 		ArrayList<String> s = predictClasses(testSet, decisionTree);
+		System.out.println();
+		System.out.println("Finished traversing.");
 		int COUNT_OUR_SUCCESS = 0;
+		System.out.println("Now evaluating the success of the predictions");
 		for (String s2 : s){
 			if (s2.equals(evaluations.get(s.indexOf(s2)))){
 				COUNT_OUR_SUCCESS++;
 			}
 		}
-		System.out.print(testSet.size());
-		System.out.print(COUNT_OUR_SUCCESS);
+		System.out.print("Decision Tree has correctly predicted " + COUNT_OUR_SUCCESS + " records");
+		System.out.print(" out of " + testSet.size() + " test records.");
+		System.out.println();
+		System.out.println("The program will now run KNN.");
+		try {
+		    Thread.sleep(10000);
+		} catch(InterruptedException ex) {
+		    Thread.currentThread().interrupt();
+		}
 	}
 	
 	//dunno if I should have this
@@ -345,6 +361,7 @@ class DTI{
 	
 	//this class does a lot of stuff
 	class Tree{		
+		
 		ArrayList<ArrayList<String>> attrs;
 		ArrayList<Record> data;
 		Analysis measure;
@@ -353,6 +370,7 @@ class DTI{
 		
 		//takes the attributes this tray can possibly cover, the data it covers, and the type of analysis
 		Tree(ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
+			System.out.print(".");
 			attrs = allAttributes;
 			data = d;
 			measure = h;
@@ -532,6 +550,7 @@ class DTI{
 		
 		//traverses recursively and assigns a class
 		String assignClassTo(Record r) throws IOException{
+			System.out.print(".");
 			String[] theseAttributes = r.attributes; //get this record's attribute values
 			String result; //prepare the result
 			//for (Tree t: nodes){ //for each child node
@@ -577,7 +596,7 @@ class DTI{
 		}
 }
 
- class Knn {
+ class Knn2 {
 	private static final int EUCLIDIAN = 0;
 	private static final int CITYBLOCK = 1;
 	private static final int CHEBYSHEV = 2;
