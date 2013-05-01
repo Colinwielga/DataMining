@@ -36,7 +36,7 @@ public class protoMush{
 	public static void main (String [] args) throws IOException{
 		//run parseArff/parseAttributes
 		
-		protoMush mushy = new protoMush("mushrooms.train.arff", "mushrooms.test.arff"); 
+		protoMush mushy = new protoMush("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff"); 
 		DTI dRunner = new DTI(dataSet, testingDataSet);
 		dRunner.run();
 		//run DTI
