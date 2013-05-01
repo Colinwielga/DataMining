@@ -83,7 +83,7 @@ public class protoMush{
 			//the attribute's name appears in index 0
 			//the attribute's values appear in the following indices
 			ArrayList<String> toAdd = new ArrayList<String>();
-			toAdd.add(attrName);
+			//toAdd.add(attrName);
 			String[] temp = attrVals.split(",");
 			for (int i = 0; i < temp.length; i++){
 				toAdd.add(temp[i]);
@@ -165,17 +165,6 @@ class DTI{
 			}
 		}
 		System.out.print(COUNT_OUR_SUCCESS);
-	}
-	
-	//returns the data which a branch applies to
-	public ArrayList<Record> findUsedData(int attrID, String[] branch){
-		HashSet<String> tester = new HashSet<String>(Arrays.asList(branch));
-		ArrayList<Record> results = new ArrayList<Record>();
-		
-		for (Record r : dataSet) //for each record in the trainingSet
-			if(tester.contains(r.attributes[attrID + 1]))
-				results.add(r);
-		return results;//yeah
 	}
 	
 	//dunno if I should have this
@@ -287,99 +276,6 @@ class DTI{
 			return -sum;
 		}
 	}*/
-	
-	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
-	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
-	int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
-		ArrayList<ArrayList<String>> allAttributesCopy = new ArrayList<ArrayList<String>>(allAttributes.size() - 1);
-		for(int i = 1; i < allAttributes.size(); i++) {
-			allAttributesCopy.add(allAttributes.get(i));
-		}
-		allAttributes = allAttributesCopy;
-		//allAttributes.remove(0); //we don't want to deal with the class
-		//that line would keep removing the first attribute i think..? each level would have one less?
-		
-		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
-		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
-		for (int i = 0; i < allAttributes.size(); i++) {
-			analBesties.add(null);
-			besties.add(null);
-		}
-		for (ArrayList<String> attr : allAttributes) {
-			attr.remove(0);
-		} //we don't need the attribute's name or class
-		
-		for (int i = 0; i < allAttributes.size(); i++) { //for each attribute in allAttributes
-			ArrayList<String> attr = allAttributes.get(i);
-			
-			String [] attrCast = new String[attr.size()]; 
-			attr.toArray(attrCast); //put the attribute's values in the array attrCast
-			
-			ArrayList<ArrayList<String[]>> poss = possibleCombinations (attrCast, 2); //poss contains all possible splits on the attribute
-			
-			double bestAnalysis = -666666.666666; //all hail s@an
-			ArrayList<String[]> bestSplit = new ArrayList<String[]>();
-			
-			for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
-				ArrayList<ArrayList<Record>> DDDD = new ArrayList<ArrayList<Record>>();
-				for (String [] s : p){
-					DDDD.add(findUsedData(i, s));
-				}
-				
-				double dummy = chief.analyze(DDDD); //check the analysis of that split
-				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
-					bestAnalysis = dummy;
-					bestSplit = p;
-				}
-				else if (chief instanceof GiniIndex && dummy < bestAnalysis){ //if chief is Gini
-					bestAnalysis = dummy;
-					bestSplit = p;
-				}/*
-				else if(chief instanceof Entropy || chief instanceof InfoGain && dummy > bestAnalysis){ //if chief is something else
-					bestAnalysis = dummy;
-					bestSplit = p;
-				}*/
-			}
-			analBesties.set(i, bestAnalysis); //store the best analysis for this attribute
-			besties.set(i, bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
-		}
-		
-		double best = -666666.666666;
-		int indexOfBest = -1;
-		//while (analBesties.size() > 0){
-			for (int i = 0; i < analBesties.size(); i++) {
-				if(analBesties.get(i) == null) {
-					System.out.println("uhoh");
-				}
-				double d = analBesties.get(i);
-
-				if (best == -666666.666666){ //if we're checking for the first time
-					best = d;
-					indexOfBest = i; //analBesties.indexOf(d); -- this searches through the whole array just to find the index. that's not good.
-				}
-				else if (chief instanceof GiniIndex && d < best){ //if chief is Gini
-					best = d;
-					indexOfBest = i;
-				}/*
-				else if(chief instanceof Entropy || chief instanceof InfoGain && d > best){ //if chief is something else
-					best = d;
-					indexOfBest = i;
-				}*/
-			}
-			if(indexOfBest == -1) {
-				System.out.println("indexOfBest = -1");
-			}
-		
-		branch = (ArrayList<String[]>)besties.get(indexOfBest).clone(); //add the best split
-			//analBesties.remove(indexOfBest); //remove that attribute's analysis 
-			//besties.remove(indexOfBest); //remove that attribute
-		//}
-		
-		//return results;
-			//results is an array of ArrayLists, in order of best analysis
-		return indexOfBest;
-			//this is the best split of those remaining attributes		
-	}
 
 	//generates all possible combinations for an array
 	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n) {
@@ -452,7 +348,8 @@ class DTI{
 			attrs = allAttributes;
 			data = d;
 			measure = h;
-			build(h);
+			if(d.size() > 5)
+				build(h);
 		}
 		
 		//finds the best attribute to split on and its split
@@ -462,6 +359,9 @@ class DTI{
 		void build(Analysis w) throws IOException{
 			ArrayList<String[]> split = new ArrayList<String[]>();
 			int attrID = establishHierarchy(w, attrs, data, split);
+			
+			splitAttr = attrID;
+			splitValues = split;
 			
 			assert(split.size() == 2);
 			assert(attrID >= 0);
@@ -476,16 +376,114 @@ class DTI{
 				}
 			}	
 		}
+
+		//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
+		//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
+		int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
+			ArrayList<ArrayList<String>> allAttributesCopy = new ArrayList<ArrayList<String>>(allAttributes.size() - 1);
+			for(int i = 1; i < allAttributes.size(); i++) {
+				allAttributesCopy.add(allAttributes.get(i));
+			}
+			allAttributes = allAttributesCopy;
+			//allAttributes.remove(0); //we don't want to deal with the class
+			//that line would keep removing the first attribute i think..? each level would have one less?
+			
+			ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
+			ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
+			for (int i = 0; i < allAttributes.size(); i++) {
+				analBesties.add(null);
+				besties.add(null);
+			}
+			
+			for (int i = 0; i < allAttributes.size(); i++) { //for each attribute in allAttributes
+				ArrayList<String> attr = allAttributes.get(i);
+				
+				String [] attrCast = new String[attr.size()]; 
+				attr.toArray(attrCast); //put the attribute's values in the array attrCast
+				
+				ArrayList<ArrayList<String[]>> poss = possibleCombinations (attrCast, 2); //poss contains all possible splits on the attribute
+				
+				double bestAnalysis = Double.POSITIVE_INFINITY; //all hail s@an
+				ArrayList<String[]> bestSplit = new ArrayList<String[]>();
+				
+				for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
+					ArrayList<ArrayList<Record>> DDDD = new ArrayList<ArrayList<Record>>();
+					for (String [] s : p){
+						DDDD.add(findUsedData(i, s));
+					}
+					
+					double dummy = chief.analyze(DDDD); //check the analysis of that split
+					if (bestAnalysis == Double.POSITIVE_INFINITY){ //if we're checking for the first time
+						bestAnalysis = dummy;
+						bestSplit = p;
+					}
+					else if (chief instanceof GiniIndex && dummy < bestAnalysis){ //if chief is Gini
+						bestAnalysis = dummy;
+						bestSplit = p;
+					}/*
+					else if(chief instanceof Entropy || chief instanceof InfoGain && dummy > bestAnalysis){ //if chief is something else
+						bestAnalysis = dummy;
+						bestSplit = p;
+					}*/
+				}
+				analBesties.set(i, bestAnalysis); //store the best analysis for this attribute
+				besties.set(i, bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
+			}
+			
+			double best = Double.POSITIVE_INFINITY;
+			int indexOfBest = -1;
+			//while (analBesties.size() > 0){
+				for (int i = 0; i < analBesties.size(); i++) {
+					if(analBesties.get(i) == null) {
+						System.out.println("uhoh");
+					}
+					double d = analBesties.get(i);
+
+					if (best == Double.POSITIVE_INFINITY){ //if we're checking for the first time
+						best = d;
+						indexOfBest = i; //analBesties.indexOf(d); -- this searches through the whole array just to find the index. that's not good.
+					} else if (chief instanceof GiniIndex && d < best){ //if chief is Gini
+						best = d;
+						indexOfBest = i;
+					}/*
+					else if(chief instanceof Entropy || chief instanceof InfoGain && d > best){ //if chief is something else
+						best = d;
+						indexOfBest = i;
+					}*/
+				}
+				if(indexOfBest == -1) {
+					System.out.println("indexOfBest = -1");
+				}
+			
+				branch.addAll(besties.get(indexOfBest)); //add the best split
+				//analBesties.remove(indexOfBest); //remove that attribute's analysis 
+				//besties.remove(indexOfBest); //remove that attribute
+			//}
+			
+			//return results;
+				//results is an array of ArrayLists, in order of best analysis
+			return indexOfBest;
+				//this is the best split of those remaining attributes		
+		}
 		
-		
+		//returns the data which a branch applies to
+		public ArrayList<Record> findUsedData(int attrID, String[] branch){
+			HashSet<String> tester = new HashSet<String>(Arrays.asList(branch));
+			ArrayList<Record> results = new ArrayList<Record>();
+			
+			for (Record r : data) //for each record in the trainingSet
+				if(tester.contains(r.attributes[attrID + 1]))
+					results.add(r);
+			return results;//yeah
+		}
 		
 		//returns attributes unused by the branch
 		ArrayList<ArrayList<String>> findUnusedAttributes(int attrID, String[] branch){
 			ArrayList<ArrayList<String>> results = (ArrayList<ArrayList<String>>) attrs.clone(); //copy all the attributes from the parent node 
 			
-			results.set(attrID, (ArrayList<String>)results.get(attrID).clone()); //make a new copy of this arraylist because we're going to modify it by removing entries
+			results.set(attrID + 1, (ArrayList<String>)results.get(attrID + 1).clone()); //make a new copy of this arraylist because we're going to modify it by removing entries
 			
-			results.get(attrID).removeAll(Arrays.asList(branch));
+			results.get(attrID + 1).removeAll(Arrays.asList(branch));
 
 			return results;
 		}
@@ -510,6 +508,9 @@ class DTI{
 			return null; //if we've reached this point, the branch isn't pure and will return null
 		}
 		
+		int splitAttr;
+		ArrayList<String[]> splitValues;
+		
 		//just accesses establishHierarchy for the tree at this point in the recursion
 		int splitAtThisLevel(ArrayList<String[]> branch) throws IOException{
 			return establishHierarchy(measure, attrs, data, branch);
@@ -527,20 +528,24 @@ class DTI{
 			String result; //prepare the result
 			//for (Tree t: nodes){ //for each child node
 			Tree t = this;
-				ArrayList<String[]> branch = new ArrayList<String[]>();
-				int attrID = t.splitAtThisLevel(branch);
-				String[] s1 = branch.get(0); //get its first branch
-				String[] s2 = branch.get(1); //get its second branch
+				//ArrayList<String[]> branch = new ArrayList<String[]>();
+				int attrID = splitAttr;//t.splitAtThisLevel(branch);
+				String[] s1 = splitValues.get(0);//branch.get(0); //get its first branch
+				String[] s2 = splitValues.get(1); //get its second branch
+				
+				//if(attrID != t.splitAttr) {
+				//	System.err.println("esrgsef");
+				//}
 				
 				HashSet<String> s1Tester = new HashSet<String>(Arrays.asList(s1)),
 								s2Tester = new HashSet<String>(Arrays.asList(s2));
 				
-				if(s1Tester.contains(theseAttributes[attrID])) {
+				if(s1Tester.contains(theseAttributes[attrID + 1])) {
 					if (isPure(attrID, s1))//if this branch is pure
 						return getClass(attrID, s1); //we've found the class - BASECASE HOORAY
 					else
 						return t.nodes.get(0).assignClassTo(r); //otherwise, we go deeper on this node
-				} else if(s2Tester.contains(theseAttributes[attrID])) {
+				} else if(s2Tester.contains(theseAttributes[attrID + 1])) {
 					if (isPure(attrID, s2))//if this branch is pure
 						return getClass(attrID, s2); //we've found the class - BASECASE HOORAY
 					else
