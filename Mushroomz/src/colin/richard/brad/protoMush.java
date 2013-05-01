@@ -20,6 +20,7 @@ import org.paukov.combinatorics.util.*;
 
 
 
+
 //that's pretty much it
 public class protoMush{
 	public static ArrayList<Record> dataSet;
