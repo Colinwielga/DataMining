@@ -4,8 +4,10 @@ import java.io.*;
 //import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 //import java.util.Collections;
 //import java.util.Comparator;
 //import java.util.HashMap;
@@ -171,66 +173,53 @@ class DTI{
 		ArrayList<Record> results = new ArrayList<Record>();
 		
 		for (Record r : dataSet) //for each record in the trainingSet
-			if(tester.contains(r.attributes[attrID]))
+			if(tester.contains(r.attributes[attrID + 1]))
 				results.add(r);
 		return results;//yeah
 	}
 	
 	//dunno if I should have this
 	abstract class Analysis{
-		
-		//counts how many times an attribute value occurs
-		int count(String val){
-			if(attributes == null){return 0;}
-			int result = 0;
-			for (String[] s : attributes){
-				for (int i = 0; i < s.length; i++){
-					if (s[i].equals(val)){
-						result++;
-					}
-				}
-			}
-			return result;
-		}
-		
-		abstract double analyze(String[] branch, ArrayList<Record> dataSet);
-		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
+		abstract double analyzeNode(ArrayList<Record> dataSet);
+		abstract double analyze(ArrayList<ArrayList<Record>> dataSubs);
 	}
 	//override some math
-	abstract class GiniIndex extends Analysis{
-		double analyze(String[] branch, ArrayList<Record> dataSet){
+	abstract class GiniIndex extends Analysis {
+		double analyzeNode(ArrayList<Record> dataSet){
 			int dataSize = dataSet.size();
 			double sum = 0;
-			int counter = 0;
+			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
 			
-			for (int i = 0; i < branch.length; i++){ //parse through that branch
-				counter += count(branch[i]); //and add the count of how many times the ith value of that branch appears in the data
-				sum += Math.pow(((double)counter)/((double)dataSize), 2);	
-			}
+			for(Record r : dataSet)
+				if(!classCounts.containsKey(r.classname))
+					classCounts.put(r.classname, 1);
+				else
+					classCounts.put(r.classname, classCounts.get(r.classname) + 1);
+			
+			for(int count : classCounts.values())
+				sum += ((double)count)/((double)dataSize)*((double)count)/((double)dataSize);
+
 			return 1.0 - sum;
 		}
-		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
 	}
 	
 	class GiniSplit extends GiniIndex{
-		double analyze(ArrayList<String[]> combo, ArrayList<ArrayList<Record>> dataSubs){
+		double analyze(ArrayList<ArrayList<Record>> childNodes){
 			double GI; //Gini indices
 			double sum = 0.0;
-			int counter = 0;
 			int dataSize = 0; //size of the data we're dealing with at the entire node
-			for (ArrayList<Record> r : dataSubs){
+			for (ArrayList<Record> r : childNodes) {
 				dataSize += r.size(); //yeah it's silly, but good for generalization
 			}
-			for (String[] s : combo){//for each branch in the node
-				for (int i = 0; i < s.length; i++){ //iterate through the branch
-					counter += count(s[i]); //count how many records are at the branch
-				}
-				GI = super.analyze(s, dataSubs.get(combo.indexOf(s))); //check the GiniIndex at that branch, for the data subset that branch covers
-				sum += (counter/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+			
+			for(ArrayList<Record> childNode : childNodes) {
+				int counter = childNode.size();
+				GI = super.analyzeNode(childNode); //check the GiniIndex at that branch, for the data subset that branch covers
+				sum += ((double)counter/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
 			}
 			return sum;//return the sum
 		}
-	}
+	}/*
 	abstract class Entropy extends Analysis{
 		double analyze(String[] branch, ArrayList<Record> dataSet){
 			double dataSize = (double)dataSet.size();
@@ -297,7 +286,7 @@ class DTI{
 			}
 			return -sum;
 		}
-	}
+	}*/
 	
 	//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
 	//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
@@ -312,11 +301,13 @@ class DTI{
 		
 		ArrayList<Double> analBesties = new ArrayList<Double>(allAttributes.size()); //this will hold the best analysis for each attribute
 		ArrayList<ArrayList<String[]>> besties = new ArrayList<ArrayList<String[]>>(allAttributes.size()); //this will hold the best split for each attribute
-		for (int i = 0; i < allAttributes.size(); i++){
+		for (int i = 0; i < allAttributes.size(); i++) {
 			analBesties.add(null);
 			besties.add(null);
 		}
-		for (ArrayList<String> attr : allAttributes){attr.remove(0);} //we don't need the attribute's name or class
+		for (ArrayList<String> attr : allAttributes) {
+			attr.remove(0);
+		} //we don't need the attribute's name or class
 		
 		for (int i = 0; i < allAttributes.size(); i++) { //for each attribute in allAttributes
 			ArrayList<String> attr = allAttributes.get(i);
@@ -335,7 +326,7 @@ class DTI{
 					DDDD.add(findUsedData(i, s));
 				}
 				
-				double dummy = chief.analyze(p, DDDD); //check the analysis of that split
+				double dummy = chief.analyze(DDDD); //check the analysis of that split
 				if (bestAnalysis == -666666.666666){ //if we're checking for the first time
 					bestAnalysis = dummy;
 					bestSplit = p;
@@ -343,11 +334,11 @@ class DTI{
 				else if (chief instanceof GiniIndex && dummy < bestAnalysis){ //if chief is Gini
 					bestAnalysis = dummy;
 					bestSplit = p;
-				}
+				}/*
 				else if(chief instanceof Entropy || chief instanceof InfoGain && dummy > bestAnalysis){ //if chief is something else
 					bestAnalysis = dummy;
 					bestSplit = p;
-				}
+				}*/
 			}
 			analBesties.set(i, bestAnalysis); //store the best analysis for this attribute
 			besties.set(i, bestSplit); //store the split for that attribute, the index will correspond with that of its analysis
@@ -369,11 +360,11 @@ class DTI{
 				else if (chief instanceof GiniIndex && d < best){ //if chief is Gini
 					best = d;
 					indexOfBest = i;
-				}
+				}/*
 				else if(chief instanceof Entropy || chief instanceof InfoGain && d > best){ //if chief is something else
 					best = d;
 					indexOfBest = i;
-				}
+				}*/
 			}
 			if(indexOfBest == -1) {
 				System.out.println("indexOfBest = -1");
@@ -534,7 +525,8 @@ class DTI{
 		String assignClassTo(Record r) throws IOException{
 			String[] theseAttributes = r.attributes; //get this record's attribute values
 			String result; //prepare the result
-			for (Tree t: nodes){ //for each child node
+			//for (Tree t: nodes){ //for each child node
+			Tree t = this;
 				ArrayList<String[]> branch = new ArrayList<String[]>();
 				int attrID = t.splitAtThisLevel(branch);
 				String[] s1 = branch.get(0); //get its first branch
@@ -557,7 +549,7 @@ class DTI{
 					System.err.println("shouldn't get here");
 					System.exit(-1);
 				}				
-			}
+			//}
 			return "error";
 		}	
 	}
