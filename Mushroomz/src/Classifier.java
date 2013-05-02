@@ -5,8 +5,8 @@ import java.util.*;
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
-		ArrayList<NominalInstance> dataSet = parseArff(in);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest);
+		ArrayList<NominalInstance> dataSet = parseArff(in, 50);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -50);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
@@ -19,10 +19,10 @@ public class Classifier {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff");
+		classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff");
 	}
 	
-	static ArrayList<NominalInstance> parseArff(String fileName) throws IOException {
+	static ArrayList<NominalInstance> parseArff(String fileName, int percentFilter) throws IOException {
 		ArrayList<NominalInstance> records = new ArrayList<NominalInstance>();
 			
 		//@data is the line immediately preceding csv
@@ -33,7 +33,14 @@ public class Classifier {
 		while ((line = inputStream.readLine()) != null && line.indexOf(",") != -1)
 			records.add(new NominalInstance(line));
 		inputStream.close();
-		return records;
+		if(percentFilter > 0) {
+			System.out.println("to: " + (percentFilter*records.size())/100);
+			return new ArrayList<NominalInstance>(records.subList(0, (percentFilter*records.size())/100));
+		} else {
+			System.out.println("from: " + (-percentFilter*records.size())/100);
+			return new ArrayList<NominalInstance>(records.subList((-percentFilter*records.size())/100, records.size()));
+		}
+		//return records;
 	}
 	
 	static ArrayList<ArrayList<String>> parseAttributes(String fileName, ArrayList<String> attrNames) throws IOException{
