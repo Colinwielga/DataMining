@@ -10,7 +10,7 @@ public class Classifier {
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
-		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames));
+		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames);
 		//run KNN
 		kNN.main(null);
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
@@ -18,7 +18,7 @@ public class Classifier {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
+		classify("mushrooms.nostalkroot.shuffled.arff", "mushrooms.nostalkroot.shuffled.arff");
 	}
 	
 	static ArrayList<NominalInstance> parseArff(String fileName) throws IOException {
@@ -82,7 +82,7 @@ public class Classifier {
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI {
-	public DTI(ArrayList<NominalInstance> data, ArrayList<NominalInstance> tests, ArrayList<ArrayList<String>> allAttributes) throws IOException{
+	public DTI(ArrayList<NominalInstance> data, ArrayList<NominalInstance> tests, ArrayList<ArrayList<String>> allAttributes, ArrayList<String> attrNames) throws IOException{
 		Tree decisionTree = new Tree(allAttributes, data, new GiniSplit());
 		
 		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
@@ -92,7 +92,7 @@ class DTI {
 				successfulPredictions++;
 		System.out.printf("%s/%s\n", successfulPredictions, predictedClasses.size());
 		
-		decisionTree.print(0);
+		decisionTree.print(0, attrNames);
 	}
 	
 	abstract class Analysis {
@@ -249,17 +249,19 @@ class DTI {
 			attrs = allAttributes;
 			data = d;
 			measure = h;
-			if(d.size() == 890) {
-				System.out.println("Rtgtg");
-			}
-			if(d.size() > 5 || (d.size() > 1 && !isPure()))
+			if(!isPure())
 				build(h);
 		}
 		
-		void print(int indent) {
-			System.out.println(new String(new char[indent]).replace("\0", "\t") + splitAttr);
-			for(Tree node : nodes)
-				node.print(indent + 1);
+		void print(int indent, ArrayList<String> attrNames) {
+			System.out.print(attrNames.get(splitAttr + 1) + "->");
+			for(int i = 0; i < 2; i++) {
+				System.out.print("\n" + new String(new char[indent + 1]).replace("\0", "\t") + Arrays.toString(splitValues.get(i)));
+				if(nodes.size() > i && nodes.get(i).splitValues != null) {
+					System.out.print(" - ");
+					nodes.get(i).print(indent + 1, attrNames);
+				}
+			}
 		}
 		
 		//finds the best attribute to split on and its split

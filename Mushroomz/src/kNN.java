@@ -280,7 +280,7 @@ public class kNN {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
+		classify("mushrooms.nostalkroot.shuffled.dimreduc.train.arff", "mushrooms.nostalkroot.shuffled.dimreduc.test.arff");
 	}
 	
 	//Create a ChartPanel from the given dataset, each of which will hold a series for every distance metric
