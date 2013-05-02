@@ -3,28 +3,25 @@ package colin.richard.brad;
 import java.io.*;
 import java.util.*;
 
-public class protoMush {
-	public static ArrayList<Record> dataSet;
-	public static ArrayList<Record> testingDataSet;
-	static File inputTrain;
-	static File inputTest;
-	public protoMush(String in, String inTest) throws IOException{
-		dataSet = parseArff(in.toString());
-		testingDataSet = parseArff(inTest.toString());
-		inputTrain = new File(in);
-		inputTest = new File(inTest);
-	}
+public class classify {
+	public ArrayList<Record> dataSet;
+	public ArrayList<Record> testingDataSet;
+	File inputTrain;
+	File inputTest;
 	
-	public static void main (String [] args) throws IOException{
-		//run parseArff/parseAttributes
+	public classify(String in, String inTest) throws IOException{
+		dataSet = parseArff(in);
+		testingDataSet = parseArff(inTest);
 		
-		protoMush mushy = new protoMush("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff"); 
-		DTI dRunner = new DTI(dataSet, testingDataSet);
-		dRunner.run();
+		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString()));
 		//run DTI
 		//run KNN
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
-		
+	}
+	
+	public static void main(String [] args) throws IOException{
+		//run parseArff/parseAttributes
+		new classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
 	}
 	
 	static ArrayList<Record> parseArff(String fileName) throws IOException {
@@ -109,52 +106,25 @@ class Record {
 }
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
-class DTI{
-	//constructor just instantiates fields, which may be redundant at this point
-	ArrayList<Record> dataSet;
-	ArrayList<String[]> attributes;
-	ArrayList<String> classes;
-	ArrayList<Record> testSet;
-	ArrayList<String> evaluations;
-	
-	
-	public DTI(ArrayList<Record> data, ArrayList<Record> tests){
-		dataSet = data;
-		ArrayList<String[]> att = new ArrayList<String[]>();
-		ArrayList<String> eval = new ArrayList<String>();
-		ArrayList<String> c = new ArrayList<String>();
-		for (Record r : dataSet){
-			att.add(r.attributes);
-			c.add(r.classname);
-		}
-		testSet = tests;
-		for (Record r :testSet){
-			eval.add(r.classname);
-		}
-		attributes = att;
-		evaluations = eval;
-		classes = c;
-	}
-
-	void run() throws IOException{
-		ArrayList<ArrayList<String>> allAttributes = protoMush.parseAttributes(protoMush.inputTrain.toString());
-		Tree decisionTree = new Tree(allAttributes, dataSet, new GiniSplit());
-		ArrayList<String> s = predictClasses(testSet, decisionTree);
-		int COUNT_OUR_SUCCESS = 0;
-		for(int i = 0; i < s.size(); i++) {
-			if (s.get(i).equals(evaluations.get(i))){
-				COUNT_OUR_SUCCESS++;
-			}
-		}
-		System.out.printf("%s/%s", COUNT_OUR_SUCCESS, s.size());
+class DTI {
+	public DTI(ArrayList<Record> data, ArrayList<Record> tests, ArrayList<ArrayList<String>> allAttributes) throws IOException{
+		Tree decisionTree = new Tree(allAttributes, data, new GiniSplit());
+		
+		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
+		int successfulPredictions = 0;
+		for(int i = 0; i < predictedClasses.size(); i++)
+			if (predictedClasses.get(i).equals(tests.get(i).classname))
+				successfulPredictions++;
+		System.out.printf("%s/%s\n", successfulPredictions, predictedClasses.size());
+		
 		decisionTree.print(0);
 	}
 	
-	//dunno if I should have this
-	abstract class Analysis{
+	abstract class Analysis {
 		abstract double analyzeNode(ArrayList<Record> dataSet);
 		abstract double analyze(ArrayList<ArrayList<Record>> dataSubs);
 	}
+	
 	//override some math
 	abstract class GiniIndex extends Analysis {
 		double analyzeNode(ArrayList<Record> dataSet){
