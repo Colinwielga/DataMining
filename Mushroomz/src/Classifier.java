@@ -10,15 +10,16 @@ public class Classifier {
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
-		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames);
-		//run KNN
-		kNN.main(null);
+		DTI.Tree decisionTree = new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames).decisionTree;
+		//run KNN 
+		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", null);
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
+		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", decisionTree.getTopLevelAttributes(6));
 		System.out.println("Done");
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.nostalkroot.shuffled.arff", "mushrooms.nostalkroot.shuffled.arff");
+		classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff");
 	}
 	
 	static ArrayList<NominalInstance> parseArff(String fileName) throws IOException {
@@ -82,8 +83,10 @@ public class Classifier {
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI {
+	public Tree decisionTree;
+	
 	public DTI(ArrayList<NominalInstance> data, ArrayList<NominalInstance> tests, ArrayList<ArrayList<String>> allAttributes, ArrayList<String> attrNames) throws IOException{
-		Tree decisionTree = new Tree(allAttributes, data, new GiniSplit());
+		decisionTree = new Tree(allAttributes, data, new GiniSplit());
 		
 		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
 		int successfulPredictions = 0;
@@ -253,14 +256,26 @@ class DTI {
 				build(h);
 		}
 		
+		public HashSet<Integer> getTopLevelAttributes(int i) {
+			HashSet<Integer> attrs = new HashSet<Integer>(Arrays.asList(new Integer[] {0})); 
+			if(i > 0) {
+				attrs.add(splitAttr + 1);
+				for(Tree node : nodes)
+					attrs.addAll(node.getTopLevelAttributes(i - 1));
+			}
+			return attrs;
+		}
+
 		void print(int indent, ArrayList<String> attrNames) {
 			System.out.print(attrNames.get(splitAttr + 1) + "->");
 			for(int i = 0; i < 2; i++) {
 				System.out.print("\n" + new String(new char[indent + 1]).replace("\0", "\t") + Arrays.toString(splitValues.get(i)));
-				if(nodes.size() > i && nodes.get(i).splitValues != null) {
-					System.out.print(" - ");
+
+				System.out.print(" - ");
+				if(nodes.size() > i && nodes.get(i).splitValues != null)
 					nodes.get(i).print(indent + 1, attrNames);
-				}
+				else
+					System.out.print(nodes.get(i).getClassName() + " (" + nodes.get(i).data.size() + ")");
 			}
 		}
 		

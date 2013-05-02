@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Comparator;
 import java.util.Collections;
@@ -256,17 +257,24 @@ public class kNN {
 	public static HashMap<String, Double>[] attributeMapping;
 	
 	@SuppressWarnings("unchecked")
-	static ArrayList<Record> parseArff(String fileName) throws IOException {
+	static ArrayList<Record> parseArff(String fileName, HashSet<Integer> hashSet) throws IOException {
 		ArrayList<Record> records = new ArrayList<Record>();
 			
 		//@data is the line immediately preceding csv
 		Instances data = new ArffReader(new BufferedReader(new FileReader(fileName))).getData();
 		data.setClassIndex(0);
 		
+		if(hashSet != null)
+			for(int i = data.numAttributes() - 1; i >= 0; i--)
+				if(!hashSet.contains(i))
+					data.deleteAttributeAt(i);
+		
 		attributeMapping = (HashMap<String,Double>[])(new HashMap[data.numAttributes()]);
 		
 		for(int j = 0; j < data.classAttribute().numValues(); j++)
 			kNN.classes.put(data.classAttribute().value(j), new Class());
+		
+		//attributeMapping maps each value of a nominal attribute to a number
 		for(int i = 1; i < data.numAttributes(); i++) {
 			attributeMapping[i] = new HashMap<String, Double>();
 			for(int j = 0; j < data.attribute(i).numValues(); j++)
@@ -280,7 +288,7 @@ public class kNN {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		classify("mushrooms.nostalkroot.shuffled.dimreduc.train.arff", "mushrooms.nostalkroot.shuffled.dimreduc.test.arff");
+		//classify("mushrooms.nostalkroot.shuffled.dimreduc.train.arff", "mushrooms.nostalkroot.shuffled.dimreduc.test.arff");
 	}
 	
 	//Create a ChartPanel from the given dataset, each of which will hold a series for every distance metric
@@ -306,14 +314,14 @@ public class kNN {
         return chartPanel;
     }
 
-	static void classify(String trainFile, String testFile) throws IOException {
+	static void classify(String trainFile, String testFile, HashSet<Integer> hashSet) throws IOException {
 		try {
 			System.out.println("Testing " + trainFile + " with " + testFile);
 			
 			//Parse files
-			ArrayList<Record> trains = parseArff(trainFile);
+			ArrayList<Record> trains = parseArff(trainFile, hashSet);
 			int trainClassCount = classes.size();
-			ArrayList<Record> tests = parseArff(testFile);
+			ArrayList<Record> tests = parseArff(testFile, hashSet);
 			int testClassCount = classes.size() - trainClassCount;
 			System.out.printf("Train stats: %d instances, %d attributes, %d classes\n", trains.size(), trains.get(0).attributes.size(), trainClassCount);
 			System.out.printf("Test stats: %d instances, %d attributes, %d classes\n", tests.size(), tests.get(0).attributes.size(), testClassCount);
