@@ -1,5 +1,3 @@
-package colin.richard.brad.genes.x;
-
 import java.io.*;
 import java.util.*;
 

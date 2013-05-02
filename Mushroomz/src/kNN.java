@@ -1,5 +1,3 @@
-package colin.richard.brad.genes;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +11,6 @@ import org.jfree.data.xy.*;
 import org.jfree.chart.renderer.xy.*;
 import org.jfree.ui.*;
 
-import weka.core.Attribute;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader.ArffReader;
@@ -42,8 +39,8 @@ class Record {
 
 		//Globally keep track of class names so we can properly form confusion matrices, and so we know how many graphs to plot
 		classname = fields[fields.length - 1];
-		if(!genes.classes.containsKey(classname))
-			genes.classes.put(classname, new Class());
+		if(!kNN.classes.containsKey(classname))
+			kNN.classes.put(classname, new Class());
 		
 		//assert(attributes.size() == fields.length - 1);
 	}
@@ -54,8 +51,8 @@ class Record {
 		
 		for(int i = 1; i < instance.numAttributes(); i++) {
 			assert(instance.attribute(i).numValues() == 1);
-			for(int j = 0; j < genes.attributeMapping[i].size(); j++)
-				if(genes.attributeMapping[i].get(instance.stringValue(i)) != null && j == genes.attributeMapping[i].get(instance.stringValue(i)))
+			for(int j = 0; j < kNN.attributeMapping[i].size(); j++)
+				if(kNN.attributeMapping[i].get(instance.stringValue(i)) != null && j == kNN.attributeMapping[i].get(instance.stringValue(i)))
 					attributes.add(1.0);
 				else
 					attributes.add(0.0);
@@ -130,9 +127,9 @@ abstract class DistanceMetric {
 		Scores(String metricName, String classNm) {
 			nameOfMetric = metricName;
 			nameOfClass = classNm;
-			genes.classes.get(classNm).precision.addSeries(precisionPlot = new XYSeries(metricName));
-			genes.classes.get(classNm).recall.addSeries(recallPlot    = new XYSeries(metricName));
-			genes.classes.get(classNm).Fmeasure.addSeries(FmeasurePlot  = new XYSeries(metricName));
+			kNN.classes.get(classNm).precision.addSeries(precisionPlot = new XYSeries(metricName));
+			kNN.classes.get(classNm).recall.addSeries(recallPlot    = new XYSeries(metricName));
+			kNN.classes.get(classNm).Fmeasure.addSeries(FmeasurePlot  = new XYSeries(metricName));
 		}
 		void calculate(int k) {
 			double accuracy  = ((double)truePositives+trueNegatives)/(falseNegatives+falsePositives+trueNegatives+truePositives),
@@ -183,7 +180,7 @@ abstract class DistanceMetric {
 		//store a structure called Scores for each class in the dataset, which maintains information on the class's confusion matrix and
 		//is called to computer it aggregate scores.
 		HashMap<String, Scores> scoresPerClass = new HashMap<String, Scores>();
-		for(String key : genes.classes.keySet())
+		for(String key : kNN.classes.keySet())
 			scoresPerClass.put(key, new Scores(getClass().getSimpleName().replaceAll("_", " "), key));
 			//Make the new Scores objects here. They are used only temporarily to calculate the scores for this distance matrix. They will be destroyed after the function returns.
 			//The Scores objects get passed the name of their target class so that they can add to the class's plot, as well as the name of this distance metric.
@@ -243,7 +240,7 @@ class Cosine extends DistanceMetric {
 	}
 }
 
-public class genes {
+public class kNN {
 	//Error status for when the input file given is not available.
 	static final int EX_NOINPUT = 66;
 	
@@ -269,7 +266,7 @@ public class genes {
 		attributeMapping = (HashMap<String,Double>[])(new HashMap[data.numAttributes()]);
 		
 		for(int j = 0; j < data.classAttribute().numValues(); j++)
-			genes.classes.put(data.classAttribute().value(j), new Class());
+			kNN.classes.put(data.classAttribute().value(j), new Class());
 		for(int i = 1; i < data.numAttributes(); i++) {
 			attributeMapping[i] = new HashMap<String, Double>();
 			for(int j = 0; j < data.attribute(i).numValues(); j++)
@@ -283,7 +280,7 @@ public class genes {
 	}
 	
 	public static void main(String[] args) throws IOException {
-		classify("mushrooms.train.arff", "mushrooms.test.arff");
+		classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
 	}
 	
 	//Create a ChartPanel from the given dataset, each of which will hold a series for every distance metric

@@ -1,31 +1,28 @@
-package colin.richard.brad;
+
 
 import java.io.*;
 import java.util.*;
 
-public class classify {
-	public ArrayList<Record> dataSet;
-	public ArrayList<Record> testingDataSet;
-	File inputTrain;
-	File inputTest;
-	
-	public classify(String in, String inTest) throws IOException{
-		dataSet = parseArff(in);
-		testingDataSet = parseArff(inTest);
+public class Classifier {
+	public static void classify(String in, String inTest) throws IOException{
+		ArrayList<NominalInstance> dataSet = parseArff(in);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest);
 		
-		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString()));
+		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
+		new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames));
 		//run KNN
+		kNN.main(null);
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
+		System.out.println("Done");
 	}
 	
-	public static void main(String [] args) throws IOException{
-		//run parseArff/parseAttributes
-		new classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
+	public static void main(String [] args) throws IOException {
+		classify("mushrooms.nostalkroot.shuffled.train.arff", "mushrooms.nostalkroot.shuffled.test.arff");
 	}
 	
-	static ArrayList<Record> parseArff(String fileName) throws IOException {
-		ArrayList<Record> records = new ArrayList<Record>();
+	static ArrayList<NominalInstance> parseArff(String fileName) throws IOException {
+		ArrayList<NominalInstance> records = new ArrayList<NominalInstance>();
 			
 		//@data is the line immediately preceding csv
 		BufferedReader inputStream = new BufferedReader(new FileReader(fileName));
@@ -33,12 +30,12 @@ public class classify {
 		
 		String line;
 		while ((line = inputStream.readLine()) != null && line.indexOf(",") != -1)
-			records.add(new Record(line));
+			records.add(new NominalInstance(line));
 		inputStream.close();
 		return records;
 	}
 	
-	static ArrayList<ArrayList<String>> parseAttributes(String fileName) throws IOException{
+	static ArrayList<ArrayList<String>> parseAttributes(String fileName, ArrayList<String> attrNames) throws IOException{
 		ArrayList<ArrayList<String>> results = new ArrayList<ArrayList<String>>();
 		
 		BufferedReader inputStream = new BufferedReader(new FileReader(fileName));
@@ -53,8 +50,9 @@ public class classify {
 			//keep track of spaces on the line
 			int space = in.indexOf(" ");
 			int space2 = in.lastIndexOf(" ");
-			//the attributes name 
-			String attrName = in.substring(space + 1, space2);
+
+			attrNames.add(in.substring(space + 1, space2)); //store attribute's name
+			
 			//the attributes values. space2 + 2 should step over the "{" 
 			//while in.length() - 1 should step behind the "}"
 			String attrVals = in.substring(space2 + 2, in.length() - 1);
@@ -62,11 +60,11 @@ public class classify {
 			//the attribute's name appears in index 0
 			//the attribute's values appear in the following indices
 			ArrayList<String> toAdd = new ArrayList<String>();
-			//toAdd.add(attrName);
+
 			String[] temp = attrVals.split(",");
-			for (int i = 0; i < temp.length; i++){
+			for (int i = 0; i < temp.length; i++)
 				toAdd.add(temp[i]);
-				}
+
 			results.add(toAdd);
 			in = inputStream.readLine();
 		}	
@@ -77,37 +75,14 @@ public class classify {
 		
 	}
 	static double lgBase(int n, double x){
-		if (x == 0)
-			return 0;
-		else 
-			return Math.log(x)/Math.log(n);
+		return x == 0 ? 0 : Math.log(x)/Math.log(n);
 	}
 }
 
-
-//this might only work for KNN, needs to be modified for DTI
-//this is not anything close to Richard's Records class
-//all this does is keep track of the classname and attributes, which is useful
-//the Tree class and DTI will perform class assignment and everything else
-class Record {
-	String[] attributes;
-	String classname;
-	
-	String getClassname(){return classname;}
-	
-	Record(String line) {
-		String[] fields = line.split(",");
-		attributes = fields;
-		//Globally keep track of class names so we can properly form confusion matrices, and so we know how many graphs to plot
-		classname = fields[0];
-		
-	}
-	
-}
 
 //performs DTI, contains methods which will also prune to later pass to modifiedKNN
 class DTI {
-	public DTI(ArrayList<Record> data, ArrayList<Record> tests, ArrayList<ArrayList<String>> allAttributes) throws IOException{
+	public DTI(ArrayList<NominalInstance> data, ArrayList<NominalInstance> tests, ArrayList<ArrayList<String>> allAttributes) throws IOException{
 		Tree decisionTree = new Tree(allAttributes, data, new GiniSplit());
 		
 		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
@@ -121,18 +96,18 @@ class DTI {
 	}
 	
 	abstract class Analysis {
-		abstract double analyzeNode(ArrayList<Record> dataSet);
-		abstract double analyze(ArrayList<ArrayList<Record>> dataSubs);
+		abstract double analyzeNode(ArrayList<NominalInstance> dataSet);
+		abstract double analyze(ArrayList<ArrayList<NominalInstance>> dataSubs);
 	}
 	
 	//override some math
 	abstract class GiniIndex extends Analysis {
-		double analyzeNode(ArrayList<Record> dataSet){
+		double analyzeNode(ArrayList<NominalInstance> dataSet){
 			int dataSize = dataSet.size();
 			double sum = 0;
 			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
 			
-			for(Record r : dataSet)
+			for(NominalInstance r : dataSet)
 				if(!classCounts.containsKey(r.classname))
 					classCounts.put(r.classname, 1);
 				else
@@ -146,16 +121,16 @@ class DTI {
 	}
 	
 	class GiniSplit extends GiniIndex{
-		double analyze(ArrayList<ArrayList<Record>> childNodes){
+		double analyze(ArrayList<ArrayList<NominalInstance>> childNodes){
 			double GI; //Gini indices
 			double sum = 0.0;
 			int dataSize = 0; //size of the data we're dealing with at the entire node
-			for (ArrayList<Record> r : childNodes) {
+			for (ArrayList<NominalInstance> r : childNodes) {
 				dataSize += r.size(); //yeah it's silly, but good for generalization
 			}
 			
 			
-			for(ArrayList<Record> childNode : childNodes) {
+			for(ArrayList<NominalInstance> childNode : childNodes) {
 				int counter = childNode.size();
 				GI = super.analyzeNode(childNode); //check the GiniIndex at that branch, for the data subset that branch covers
 				sum += ((double)counter/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
@@ -264,13 +239,13 @@ class DTI {
 	
 	class Tree{		
 		ArrayList<ArrayList<String>> attrs;
-		ArrayList<Record> data;
+		ArrayList<NominalInstance> data;
 		Analysis measure;
 		
 		ArrayList<Tree> nodes = new ArrayList<Tree>();
 		
 		//takes the attributes this tray can possibly cover, the data it covers, and the type of analysis
-		Tree(ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> d, Analysis h) throws IOException{
+		Tree(ArrayList<ArrayList<String>> allAttributes, ArrayList<NominalInstance> d, Analysis h) throws IOException{
 			attrs = allAttributes;
 			data = d;
 			measure = h;
@@ -303,7 +278,7 @@ class DTI {
 			
 			for (int i = 0; i < split.size(); i++){ //iterate through each of the children
 				String[] branch = split.get(i); //branch is the array with the attribute values its split on
-				ArrayList<Record> d = findUsedData(attrID, branch); //find the data which the split applies to 
+				ArrayList<NominalInstance> d = findUsedData(attrID, branch); //find the data which the split applies to 
 				ArrayList<ArrayList<String>> a = findUnusedAttributes(attrID, branch); //find the attributes the split doesn't apply to
 				if(a.size() > 1 && d.size() > 0 && d.size() < data.size()) {
 					Tree node = new Tree(a, d, w); //create a child tree which works with the same data and unused attributes
@@ -314,7 +289,7 @@ class DTI {
 
 		//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
 		//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
-		int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<Record> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
+		int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<NominalInstance> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
 			if(data.size() == 889) {
 				System.out.println("gggt");
 			}
@@ -346,7 +321,7 @@ class DTI {
 				ArrayList<String[]> bestSplit = new ArrayList<String[]>();
 				
 				for (ArrayList<String[]> p : poss){ //for each possible split on the attribute, we're checking for the best
-					ArrayList<ArrayList<Record>> DDDD = new ArrayList<ArrayList<Record>>();
+					ArrayList<ArrayList<NominalInstance>> DDDD = new ArrayList<ArrayList<NominalInstance>>();
 					for (String [] s : p){
 						DDDD.add(findUsedData(i, s));
 					}
@@ -406,11 +381,11 @@ class DTI {
 		}
 		
 		//returns the data which a branch applies to
-		public ArrayList<Record> findUsedData(int attrID, String[] branch){
+		public ArrayList<NominalInstance> findUsedData(int attrID, String[] branch){
 			HashSet<String> tester = new HashSet<String>(Arrays.asList(branch));
-			ArrayList<Record> results = new ArrayList<Record>();
+			ArrayList<NominalInstance> results = new ArrayList<NominalInstance>();
 			
-			for (Record r : data) //for each record in the trainingSet
+			for (NominalInstance r : data) //for each record in the trainingSet
 				if(tester.contains(r.attributes[attrID + 1]))
 					results.add(r);
 			return results;//yeah
@@ -432,7 +407,7 @@ class DTI {
 				System.err.print("ESRgersgrfg");
 			}
 			String c = data.get(0).classname; //check the first class in that data subset
-			for (Record r : data){ //for each of the records in that subset
+			for (NominalInstance r : data){ //for each of the records in that subset
 				if(!(r.classname.equals(c))){ //if one of the classes doesn't match
 					return false; //the branch isn't pure
 				}
@@ -460,10 +435,10 @@ class DTI {
 		void prune(int nodeIndex){nodes.remove(nodeIndex);}
 		
 		//same as above but with different arg
-		void prune(ArrayList<Record> node){nodes.remove(node);}
+		void prune(ArrayList<NominalInstance> node){nodes.remove(node);}
 		
 		//traverses recursively and assigns a class
-		String assignClassTo(Record r) throws IOException{
+		String assignClassTo(NominalInstance r) throws IOException{
 			String[] theseAttributes = r.attributes; //get this record's attribute values
 			String result; //prepare the result
 			//ArrayList<String[]> branch = new ArrayList<String[]>();
@@ -499,9 +474,9 @@ class DTI {
 	}
 	
 	//pretty much just conglomerates test results
-	ArrayList<String> predictClasses(ArrayList<Record> testSet, Tree decisionTree) throws IOException{
+	ArrayList<String> predictClasses(ArrayList<NominalInstance> testSet, Tree decisionTree) throws IOException{
 		ArrayList<String> results = new ArrayList<String>();
-		for (Record r : testSet){
+		for (NominalInstance r : testSet){
 			results.add(decisionTree.assignClassTo(r));
 			}
 		return results;
