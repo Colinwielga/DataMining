@@ -47,7 +47,7 @@ class Record {
 	}
 	
 	public Record(Instance instance, Instances instances) {
-		assert(instance.classAttribute().numValues() == 1);
+		//assert(instance.classAttribute().numValues() == 1);
 		classname = instance.stringValue(0);
 		
 		for(int i = 1; i < instance.numAttributes(); i++) {

@@ -1,12 +1,10 @@
-
-
 import java.io.*;
 import java.util.*;
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
-		ArrayList<NominalInstance> dataSet = parseArff(in, 50);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -50);
+		ArrayList<NominalInstance> dataSet = parseArff(in, 15);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -15);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
@@ -19,7 +17,7 @@ public class Classifier {
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff");
+		classify("mushrooms.expanded.arff", "mushrooms.expanded.arff");
 	}
 	
 	static ArrayList<NominalInstance> parseArff(String fileName, int percentFilter) throws IOException {
@@ -107,7 +105,7 @@ class DTI {
 	
 	abstract class Analysis {
 		abstract double analyzeNode(ArrayList<NominalInstance> dataSet);
-		abstract double analyze(ArrayList<ArrayList<NominalInstance>> dataSubs);
+		abstract double analyze(Tree parentTree, ArrayList<ArrayList<NominalInstance>> dataSubs);
 	}
 	
 	//override some math
@@ -129,21 +127,38 @@ class DTI {
 			return 1.0 - sum;
 		}
 	}
-	
+	abstract class Entropy extends Analysis {
+		double analyzeNode(ArrayList<NominalInstance> dataSet){
+			int dataSize = dataSet.size();
+			double sum = 0;
+			HashMap<String, Integer> classCounts = new HashMap<String, Integer>();
+			
+			for(NominalInstance r : dataSet)
+				if(!classCounts.containsKey(r.classname))
+					classCounts.put(r.classname, 1);
+				else
+					classCounts.put(r.classname, classCounts.get(r.classname) + 1);
+			
+			for(int count : classCounts.values())
+				sum += ((double)count)/((double)dataSize)*Classifier.lgBase(2, ((double)count)/((double)dataSize));
+
+			return -sum;
+		}
+	}
+
 	class GiniSplit extends GiniIndex{
-		double analyze(ArrayList<ArrayList<NominalInstance>> childNodes){
+		double analyze(Tree parentTree, ArrayList<ArrayList<NominalInstance>> childNodes){
 			double GI; //Gini indices
 			double sum = 0.0;
-			int dataSize = 0; //size of the data we're dealing with at the entire node
-			for (ArrayList<NominalInstance> r : childNodes) {
-				dataSize += r.size(); //yeah it's silly, but good for generalization
-			}
-			
+			int dataSize = parentTree.data.size();
+			int dsz2 = 0;
+			for(ArrayList<NominalInstance> node : childNodes)
+				dsz2 += node.size();
+			assert(dataSize == dsz2);
 			
 			for(ArrayList<NominalInstance> childNode : childNodes) {
-				int counter = childNode.size();
 				GI = super.analyzeNode(childNode); //check the GiniIndex at that branch, for the data subset that branch covers
-				sum += ((double)counter/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+				sum += ((double)childNode.size()/dataSize) * GI; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
 			}
 			
 			if(sum != sum) {
@@ -151,54 +166,25 @@ class DTI {
 			}
 			return sum;//return the sum
 		}
-	}/*
-	abstract class Entropy extends Analysis{
-		double analyze(String[] branch, ArrayList<Record> dataSet){
-			double dataSize = (double)dataSet.size();
-			double sum = 0;
-			double counter = 0;
-			
-			for (int i = 0; i < branch.length; i++){ //parse through that branch
-				counter += count(branch[i]); //and add the count of how many times the ith value of that branch appears in the data
-				sum += (counter/dataSize)*protoMush.lgBase(2,counter/dataSize);	
-			}
-			return -sum;
-		}
-		abstract double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs);
 	}
-	class InfoGain extends Entropy{
-		double analyze(ArrayList<String[]> combos, ArrayList<ArrayList<Record>> dataSubs){
-			int sizeOfStuff = 0;
-			double counter = 0.0;
-			double E;
+	class InfoGain extends Entropy {
+		double analyze(Tree parentTree, ArrayList<ArrayList<NominalInstance>> childNodes){
 			double sum = 0.0;
+			int dataSize = parentTree.data.size();
 			
-			for (String[] s : combos){
-				sizeOfStuff += s.length;
-			}
-			String[] allData = new String[sizeOfStuff];
-			int placeHolder = 0;
-			for (String [] s : combos){
-				for (int i = 0 + placeHolder; i < s.length; i++){
-					allData[i] = s[i];
-				}
-				placeHolder = s.length - 1;
-			}
-			double parent = super.analyze(allData, dataSet);
-			
-			for (String[] s : combos){//for each branch in the node
-				for (int i = 0; i < s.length; i++){ //iterate through the branch
-					counter += count(s[i]); //count how many records are at the branch
-				}
-				E = super.analyze(s, dataSubs.get(combos.indexOf(s))); //check the GiniIndex at that branch, for the data subset that branch covers
-				sum += (counter/dataSet.size()) * E; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
+			for(ArrayList<NominalInstance> childNode : childNodes) {
+				double E = super.analyzeNode(childNode); //check the GiniIndex at that branch, for the data subset that branch covers
+				sum += ((double)childNode.size()/dataSize) * E; //sums the sizes of the child nodes divided by the size of the entire dataset times the GINI
 			}
 			
-			return parent - sum;
+			if(sum != sum)
+				return Double.POSITIVE_INFINITY;
+
+			return analyzeNode(parentTree.data) - sum;//return the sum
 		}
 	}
 	
-	class SplitInfo extends Analysis{
+	/*class SplitInfo extends Analysis{
 		
 		double analyze(String[] branch, ArrayList<Record> dataSubs){
 			return -1.0;
@@ -350,7 +336,7 @@ class DTI {
 						DDDD.add(findUsedData(i, s));
 					}
 					
-					double dummy = chief.analyze(DDDD); //check the analysis of that split
+					double dummy = chief.analyze(this, DDDD); //check the analysis of that split
 					if (bestAnalysis == Double.POSITIVE_INFINITY){ //if we're checking for the first time
 						bestAnalysis = dummy;
 						bestSplit = p;
