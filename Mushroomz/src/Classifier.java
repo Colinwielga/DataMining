@@ -5,21 +5,29 @@ import java.util.*;
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
+		 long sRT;    //runtime for the sorting algorithm
+	     long aRT; 
 		ArrayList<NominalInstance> dataSet = parseArff(in, 50);
 		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -50);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
+		sRT = System.currentTimeMillis();
 		DTI.Tree decisionTree = new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames).decisionTree;
+		aRT = System.currentTimeMillis();
+		long l = aRT - sRT;
+		System.out.println();
+		System.out.println("DTI runtime is " + l + " milliseconds."); 
+		System.out.println();
 		//run KNN 
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", null);
+		kNN.classify(in, inTest, null);
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", decisionTree.getTopLevelAttributes(6));
+		kNN.classify(in, inTest, decisionTree.getTopLevelAttributes(6));
 		System.out.println("Done");
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff");
+		classify("mushrooms.expanded.shuffled.nostalkroot.test.arff", "mushrooms.expanded.shuffled.nostalkroot.train.arff");
 	}
 	
 	static ArrayList<NominalInstance> parseArff(String fileName, int percentFilter) throws IOException {
@@ -222,7 +230,7 @@ class DTI {
 
 	//generates all possible combinations for an array
 	ArrayList<ArrayList<String[]>> possibleCombinations(String [] attr, int n) {
-		assert(n < 30); //This function (hackily) uses the properties of binary integer operations to partition a set of strings into two subsets, so there should be less elements than there are bits in an int
+		assert(n < 30); //This function uses the properties of binary integer operations to partition a set of strings into two subsets,
 		ArrayList<ArrayList<String[]>> results = new ArrayList<ArrayList<String[]>>();
 		for(int i = 1; i < 1 << (attr.length - 1); i++) {
 			ArrayList<String[]> result = new ArrayList<String[]>();
