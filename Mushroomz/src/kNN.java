@@ -25,13 +25,17 @@ class Class {
 		precision = new XYSeriesCollection(),
 		recall    = new XYSeriesCollection(),
 		Fmeasure  = new XYSeriesCollection();
+	
+	ArrayList<Double> avgAttrVal,
+					  stddevAttrVal;
 }
 
 //Parses and stores train and test records, and predicts the class of test records with the help of a DistanceMetric.
 class Record {
 	ArrayList<Double> attributes = new ArrayList<Double>();
 	String classname;
-	
+
+	Record() {}
 	Record(String line) {
 		String[] fields = line.split(",");
 		
@@ -51,7 +55,7 @@ class Record {
 		classname = instance.stringValue(0);
 		
 		for(int i = 1; i < instance.numAttributes(); i++) {
-			assert(instance.attribute(i).numValues() == 1);
+			//assert(instance.attribute(i).numValues() == 1);
 			for(int j = 0; j < kNN.attributeMapping[i].size(); j++)
 				if(kNN.attributeMapping[i].get(instance.stringValue(i)) != null && j == kNN.attributeMapping[i].get(instance.stringValue(i)))
 					attributes.add(1.0);
@@ -68,9 +72,9 @@ class Record {
 	//Used for debugging.
 	public String toString() {
 		String result = "";
-		for(int i = 0; i < 5 && i < attributes.size(); i++)
+		for(int i = 0; i < attributes.size(); i++)
 			result += String.format("%10.5f", attributes.get(i));
-		result += "..." + String.format("%10.5f", attributes.get(attributes.size()-1)) + " " + classname;
+		//result += "..." + String.format("%10.5f", attributes.get(attributes.size()-1)) + " " + classname;
 		return result;
 	}
 	
@@ -257,7 +261,7 @@ public class kNN {
 	public static HashMap<String, Double>[] attributeMapping;
 	
 	@SuppressWarnings("unchecked")
-	static ArrayList<Record> parseArff(String fileName, HashSet<Integer> hashSet) throws IOException {
+	static ArrayList<Record> parseArff(String fileName, HashSet<Integer> hashSet, int percentFilter) throws IOException {
 		ArrayList<Record> records = new ArrayList<Record>();
 			
 		//@data is the line immediately preceding csv
@@ -283,8 +287,14 @@ public class kNN {
 		
 		for(Instance instance : data)
 			records.add(new Record(instance, data));
-		
-		return records;
+
+		if(percentFilter > 0) {
+			System.out.println("to: " + (percentFilter*records.size())/100);
+			return new ArrayList<Record>(records.subList(0, (percentFilter*records.size())/100));
+		} else {
+			System.out.println("from: " + (-percentFilter*records.size())/100);
+			return new ArrayList<Record>(records.subList((-percentFilter*records.size())/100, records.size()));
+		}
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -314,17 +324,22 @@ public class kNN {
         return chartPanel;
     }
 
-	static void classify(String trainFile, String testFile, HashSet<Integer> hashSet) throws IOException {
+	static void classify(String trainFile, String testFile, HashSet<Integer> hashSet, int percentFilter) throws IOException {
 		try {
 			System.out.println("Testing " + trainFile + " with " + testFile);
 			
 			//Parse files
-			ArrayList<Record> trains = parseArff(trainFile, hashSet);
-			int trainClassCount = classes.size();
-			ArrayList<Record> tests = parseArff(testFile, hashSet);
-			int testClassCount = classes.size() - trainClassCount;
-			System.out.printf("Train stats: %d instances, %d attributes, %d classes\n", trains.size(), trains.get(0).attributes.size(), trainClassCount);
-			System.out.printf("Test stats: %d instances, %d attributes, %d classes\n", tests.size(), tests.get(0).attributes.size(), testClassCount);
+			ArrayList<Record> trains = parseArff(trainFile, hashSet, percentFilter);
+			ArrayList<Record> tests = parseArff(testFile, hashSet, -percentFilter);
+		} catch (FileNotFoundException e) {
+			System.err.println("File not found");
+			System.exit(EX_NOINPUT);
+		}
+	}
+	
+	static void classifyRecords(ArrayList<Record> trains, ArrayList<Record> tests, HashSet<Integer> hashSet, int percentFilter) {
+			System.out.printf("Train stats: %d instances, %d attributes\n", trains.size(), trains.get(0).attributes.size());
+			System.out.printf("Test stats: %d instances, %d attributes\n", tests.size(), tests.get(0).attributes.size());
 
 			//Set up display
 			JPanel gridPanel = new JPanel();
@@ -334,7 +349,7 @@ public class kNN {
 				gridPanel.add(createChart(className.getValue().recall, "Recall", className.getKey()));
 				gridPanel.add(createChart(className.getValue().Fmeasure, "F1-measure", className.getKey()));
 			}
-			final ApplicationFrame frame = new ApplicationFrame("Testing " + trainFile + " with " + testFile);
+			final ApplicationFrame frame = new ApplicationFrame("Testing ");// + trainFile + " with " + testFile);
 			frame.setContentPane(gridPanel);
 			frame.pack();
 			frame.setVisible(true);
@@ -352,10 +367,6 @@ public class kNN {
 			//System.out.println("Post-normalization:");
 			//System.out.println("Sample: " + tests.get(0));
 			//for(DistanceMetric metric : metrics) metric.printConfusionMatrices(tests, trains);
-		} catch (FileNotFoundException e) {
-			System.err.println("File not found");
-			System.exit(EX_NOINPUT);
-		}
 	}
 
 	//Loop through the data series and print them out in csv form.

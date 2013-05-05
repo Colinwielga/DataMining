@@ -1,23 +1,81 @@
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
+
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
-		ArrayList<NominalInstance> dataSet = parseArff(in, 15);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -15);
+		ArrayList<NominalInstance> dataSet = parseArff(in, 50);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -50);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
+		long dTreeTime = System.nanoTime();
 		DTI.Tree decisionTree = new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames).decisionTree;
+		System.out.println("\nDecision Tree Induction took " + (System.nanoTime() - dTreeTime)/1000000000.0 + " seconds");
 		//run KNN 
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", null);
+		long start = System.nanoTime();
+		//kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, 80);
+		long between = System.nanoTime();
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.train.arff", "mushrooms.expanded.shuffled.nostalkroot.test.arff", decisionTree.getTopLevelAttributes(6));
+		//HashSet<Integer> attrIDs = decisionTree.getTopLevelAttributes(2);
+		HashMap<Integer, ArrayList<ArrayList<String>>> attrIDVals = new HashMap<Integer, ArrayList<ArrayList<String>>>();
+		decisionTree.getTopLevelAttrVals(attrIDVals, 100);
+		for(ArrayList<ArrayList<String>> e : attrIDVals.values()) {
+			while(e.remove(new ArrayList<String>()));
+			ArrayList<String> biggest = null;
+			for(ArrayList<String> ee : e)
+				if(biggest == null || ee.size() > biggest.size())
+					biggest = ee;
+			if(biggest != null)
+				e.remove(biggest);
+		}
+
+		ArrayList<Record> numericDataSet = new ArrayList<Record>(); 
+		ArrayList<Record> testDataSet = new ArrayList<Record>(); 
+		for(NominalInstance i : dataSet) {
+			Record r = i.featureExtract(attrIDVals);
+			numericDataSet.add(r);
+			if(kNN.classes.get(r.classname).avgAttrVal == null) {
+				kNN.classes.get(r.classname).avgAttrVal = new ArrayList<Double>(r.attributes);
+				kNN.classes.get(r.classname).stddevAttrVal = new ArrayList<Double>(r.attributes);
+				for(int a = 0; a < kNN.classes.get(r.classname).stddevAttrVal.size(); a++)
+					kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a)*kNN.classes.get(r.classname).stddevAttrVal.get(a));
+			}
+			else for(int a = 0; a < r.attributes.size(); a++) {
+				kNN.classes.get(r.classname).avgAttrVal.set(a, kNN.classes.get(r.classname).avgAttrVal.get(a) + r.attributes.get(a));
+				kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a) + r.attributes.get(a)*r.attributes.get(a));
+			}
+		}
+		for(Class c : kNN.classes.values())
+			for(int d = 0; d < c.avgAttrVal.size(); d++) {
+				c.avgAttrVal.set(d, c.avgAttrVal.get(d)/numericDataSet.size());
+				c.stddevAttrVal.set(d, Math.sqrt(c.stddevAttrVal.get(d)/numericDataSet.size() - c.avgAttrVal.get(d)*c.avgAttrVal.get(d)));
+			}
+		ArrayList<Double> S2N = new ArrayList<Double>();
+		for(int a = 0; a < kNN.classes.get("poisonous").avgAttrVal.size(); a++) {
+			S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + kNN.classes.get("edible").stddevAttrVal.get(a)));
+		}
+		for(NominalInstance i : testingDataSet) {
+			testDataSet.add(i.featureExtract(attrIDVals));
+		}
+		System.out.println(numericDataSet.get(0));
+		System.out.println(numericDataSet.get(10));
+		kNN.classifyRecords(numericDataSet, testDataSet, null, 80);
+		int x = 0;
+		for(Entry<Integer, ArrayList<ArrayList<String>>> e : attrIDVals.entrySet()) {
+			for(ArrayList<String> vals : e.getValue())
+				System.out.printf("%s: %s (S2N: %s)\n", attrNames.get(e.getKey() + 1), vals, S2N.get(x++));
+		}
+
+
+		System.out.println("Time to run kNN on all attributes: " + (between - start)/1000000000);
+		System.out.println("Time to run kNN on significant attributes: " + (System.nanoTime() - between)/1000000000);
 		System.out.println("Done");
 	}
 	
 	public static void main(String [] args) throws IOException {
-		classify("mushrooms.expanded.arff", "mushrooms.expanded.arff");
+		classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff");
 	}
 	
 	static ArrayList<NominalInstance> parseArff(String fileName, int percentFilter) throws IOException {
@@ -249,6 +307,24 @@ class DTI {
 				build(h);
 		}
 		
+		public void getTopLevelAttrVals(HashMap<Integer, ArrayList<ArrayList<String>>> attrs, int i) {
+			//attrs.put(0, NominalInstance.allClasses);
+			
+			if(i > 0 && splitValues != null) {
+				if(!attrs.containsKey(splitAttr))
+					attrs.put(splitAttr, new ArrayList<ArrayList<String>>());
+				for(String[] splitVal : splitValues) {
+					ArrayList<String> splitVals = new ArrayList<String>(Arrays.asList(splitVal));
+					for(ArrayList<String> extractedSubfeatures : attrs.get(splitAttr))
+						if(extractedSubfeatures.containsAll(splitVals))
+							extractedSubfeatures.removeAll(splitVals);
+					attrs.get(splitAttr).add(splitVals);
+				}
+				for(Tree node : nodes)
+					node.getTopLevelAttrVals(attrs, i - 1);
+			}
+		}
+
 		public HashSet<Integer> getTopLevelAttributes(int i) {
 			HashSet<Integer> attrs = new HashSet<Integer>(Arrays.asList(new Integer[] {0})); 
 			if(i > 0) {
