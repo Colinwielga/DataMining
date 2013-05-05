@@ -36,6 +36,7 @@ public class Classifier {
 		for(NominalInstance i : dataSet) {
 			Record r = i.featureExtract(attrIDVals);
 			numericDataSet.add(r);
+			kNN.classes.get(r.classname).count++;
 			if(kNN.classes.get(r.classname).avgAttrVal == null) {
 				kNN.classes.get(r.classname).avgAttrVal = new ArrayList<Double>(r.attributes);
 				kNN.classes.get(r.classname).stddevAttrVal = new ArrayList<Double>(r.attributes);
@@ -49,12 +50,14 @@ public class Classifier {
 		}
 		for(Class c : kNN.classes.values())
 			for(int d = 0; d < c.avgAttrVal.size(); d++) {
-				c.avgAttrVal.set(d, c.avgAttrVal.get(d)/numericDataSet.size());
-				c.stddevAttrVal.set(d, Math.sqrt(c.stddevAttrVal.get(d)/numericDataSet.size() - c.avgAttrVal.get(d)*c.avgAttrVal.get(d)));
+				c.avgAttrVal.set(d, c.avgAttrVal.get(d)/c.count);
+				c.stddevAttrVal.set(d, Math.sqrt(c.stddevAttrVal.get(d)/c.count - c.avgAttrVal.get(d)*c.avgAttrVal.get(d)));
 			}
 		ArrayList<Double> S2N = new ArrayList<Double>();
+		ArrayList<Double> Tval = new ArrayList<Double>();
 		for(int a = 0; a < kNN.classes.get("poisonous").avgAttrVal.size(); a++) {
 			S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + kNN.classes.get("edible").stddevAttrVal.get(a)));
+			Tval.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/Math.sqrt(kNN.classes.get("poisonous").stddevAttrVal.get(a)*kNN.classes.get("poisonous").stddevAttrVal.get(a)/kNN.classes.get("poisonous").count + kNN.classes.get("edible").stddevAttrVal.get(a)*kNN.classes.get("edible").stddevAttrVal.get(a)/kNN.classes.get("edible").count));
 		}
 		for(NominalInstance i : testingDataSet) {
 			testDataSet.add(i.featureExtract(attrIDVals));
@@ -64,8 +67,10 @@ public class Classifier {
 		kNN.classifyRecords(numericDataSet, testDataSet, null, 80);
 		int x = 0;
 		for(Entry<Integer, ArrayList<ArrayList<String>>> e : attrIDVals.entrySet()) {
-			for(ArrayList<String> vals : e.getValue())
-				System.out.printf("%s: %s (S2N: %s)\n", attrNames.get(e.getKey() + 1), vals, S2N.get(x++));
+			for(ArrayList<String> vals : e.getValue()) {
+				System.out.printf("%s: %s (S2N: %6.6f, Tval: %6.6f)\n", attrNames.get(e.getKey() + 1), vals, S2N.get(x), Tval.get(x));
+				x++;
+			}
 		}
 
 
