@@ -11,8 +11,14 @@ public class Classifier {
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
 		long dTreeTime = System.nanoTime();
+		sRT = System.currentTimeMillis();
 		DTI.Tree decisionTree = new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames).decisionTree;
 		System.out.println("\nDecision Tree Induction took " + (System.nanoTime() - dTreeTime)/1000000000.0 + " seconds");
+		aRT = System.currentTimeMillis();
+		long l = aRT - sRT;
+		System.out.println();
+		System.out.println("DTI runtime is " + l + " milliseconds."); 
+		System.out.println();
 		//run KNN 
 		long start = System.nanoTime();
 		//kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, 80);
