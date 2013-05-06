@@ -333,13 +333,15 @@ public class kNN {
 			//Parse files
 			ArrayList<Record> trains = parseArff(trainFile, hashSet, percentFilter);
 			ArrayList<Record> tests = parseArff(testFile, hashSet, -percentFilter);
+			
+			classifyRecords(trains, tests, hashSet);
 		} catch (FileNotFoundException e) {
 			System.err.println("File not found");
 			System.exit(EX_NOINPUT);
 		}
 	}
 	
-	static void classifyRecords(ArrayList<Record> trains, ArrayList<Record> tests, HashSet<Integer> hashSet, int percentFilter) {
+	static void classifyRecords(ArrayList<Record> trains, ArrayList<Record> tests, HashSet<Integer> hashSet) {
 			System.out.printf("Train stats: %d instances, %d attributes\n", trains.size(), trains.get(0).attributes.size());
 			System.out.printf("Test stats: %d instances, %d attributes\n", tests.size(), tests.get(0).attributes.size());
 
