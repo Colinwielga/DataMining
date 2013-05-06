@@ -1,0 +1,1079 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <Button
+            android:id="@+id/go"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="Go" />
+
+        <ScrollView
+            android:id="@+id/scrollView1"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent" >
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical" >
+
+                <TextView
+                    android:id="@+id/t_Cap_Shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cap Shape"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg1_cap_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg1_bell"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Bell" />
+
+                    <RadioButton
+                        android:id="@+id/rg1_convex"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Convex" />
+
+                    <RadioButton
+                        android:id="@+id/rg1_flat"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Flat" />
+
+                    <RadioButton
+                        android:id="@+id/rg1_knobbed"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Knobbed" />
+
+                    <RadioButton
+                        android:id="@+id/rg1_sunken"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sunken" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_cap_surface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cap Surface"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg2_cap_surface"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg2_fibrous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Fibrous" />
+
+                    <RadioButton
+                        android:id="@+id/rg2_grooves"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Grooves" />
+
+                    <RadioButton
+                        android:id="@+id/rg2_scaly"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scaly" />
+
+                    <RadioButton
+                        android:id="@+id/rg2_smooth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Smooth" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_cap_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cap Color"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg3_cap_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg3_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_buff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Buff" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_cinnamon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cinnamon" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_gray"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gray" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_green"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Green" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_pink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pink" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_purple"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Purple" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Red" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg3_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_bruises"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Bruises"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg4_bruises"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg4_yes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Yes" />
+
+                    <RadioButton
+                        android:id="@+id/rg4_no"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="No" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_odor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Odor"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg5_odor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg5_almond"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Almond" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_anise"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Anise" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_fishy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Fishy" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_foul"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Foul" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_musty"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Musty" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_none"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="None" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_pungent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pungent" />
+
+                    <RadioButton
+                        android:id="@+id/rg5_spicy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Spicy" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_gill_attachment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gill Attachment"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg6_gill_attachment"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg6_attached"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Attached" />
+
+                    <RadioButton
+                        android:id="@+id/rg6_descending"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Descending" />
+
+                    <RadioButton
+                        android:id="@+id/rg6_free"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Free" />
+
+                    <RadioButton
+                        android:id="@+id/rg6_notched"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Notched" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_gill_spacing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gill Spacing"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg7_gill_spacing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg7_close"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Close" />
+
+                    <RadioButton
+                        android:id="@+id/rg7_crowded"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Crowded" />
+
+                    <RadioButton
+                        android:id="@+id/rg7_distant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Distant" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_gill_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gill Size"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg8_gill_size"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg8_broad"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Broad" />
+
+                    <RadioButton
+                        android:id="@+id/rg8_narrow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Narrow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_gill_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gill Color"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg9_gill_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg9_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Black" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_buff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Buff" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_chocolate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chocolate" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_gray"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gray" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_green"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Green" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_orange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Orange" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_pink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pink" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_purple"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Purple" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Red" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg9_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stalk Shape"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg10_stalk_shape"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg10_enlarging"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Enlarging" />
+
+                    <RadioButton
+                        android:id="@+id/rg10_tapering"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Tapering" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_root"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stalk Root"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg11_stalk_root"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg11_bulbous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Bulbous" />
+
+                    <RadioButton
+                        android:id="@+id/rg11_club"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Club" />
+
+                    <RadioButton
+                        android:id="@+id/rg11_equal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Equal" />
+
+                    <RadioButton
+                        android:id="@+id/rg11_rhizomorphs"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rhizomorphs" />
+
+                    <RadioButton
+                        android:id="@+id/rg11_rooted"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Rooted" />
+
+                    <RadioButton
+                        android:id="@+id/rg11_missing"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Missing" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_surface_above_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stalk Surface Above Ring"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg12_stalk_surface_above_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg12_fibrous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Fibrous" />
+
+                    <RadioButton
+                        android:id="@+id/rg12_grooves"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Grooves" />
+
+                    <RadioButton
+                        android:id="@+id/rg12_scaly"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scaly" />
+
+                    <RadioButton
+                        android:id="@+id/rg12_smooth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Smooth" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_surface_below_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stalk Surface Below Ring"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg13_stalk_surface_below_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg13_fibrous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Fibrous" />
+
+                    <RadioButton
+                        android:id="@+id/rg13_grooves"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Grooves" />
+
+                    <RadioButton
+                        android:id="@+id/rg13_scaly"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scaly" />
+
+                    <RadioButton
+                        android:id="@+id/rg13_smooth"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Smooth" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_color_above_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cap Color Above Ring"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg14_stalk_color_above_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg14_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_buff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Buff" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_cinnamon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cinnamon" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_gray"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gray" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_orange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Orange" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_pink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pink" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Red" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg14_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_stalk_color_below_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cap Color Below Ring"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg15_stalk_color_below_ring"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg15_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_buff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Buff" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_cinnamon"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cinnamon" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_gray"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Gray" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_orange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Orange" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_pink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pink" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_red"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Red" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg15_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_veil_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Veil Type"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg16_veil_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg16_partial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Partial" />
+
+                    <RadioButton
+                        android:id="@+id/rg16_universal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Universal" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_veil_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Veil Color"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg17_veil_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg17_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg17_orange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Orange" />
+
+                    <RadioButton
+                        android:id="@+id/rg17_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg17_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_ring_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ring Number"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg18_ring_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg18_none"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="None" />
+
+                    <RadioButton
+                        android:id="@+id/rg18_one"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="One" />
+
+                    <RadioButton
+                        android:id="@+id/rg18_two"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Two" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_ring_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ring Type"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg19_ring_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg19_cobwebby"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Cobwebby" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_evanesent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Evanesent" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_flaring"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Flaring" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_large"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Large" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_none"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="None" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_pendant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pendant" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_sheathing"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sheathing" />
+
+                    <RadioButton
+                        android:id="@+id/rg19_zone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Zone" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_spore_print_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Spore Print Color"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg20_spore_print_color"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg20_black"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Black" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_brown"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Brown" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_buff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Buff" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_chocolate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Chocolate" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_green"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Green" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_orange"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Orange" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_purple"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Purple" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_white"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="White" />
+
+                    <RadioButton
+                        android:id="@+id/rg20_yellow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Yellow" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_population"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Population"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg21_population"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg21_abundant"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Abundant" />
+
+                    <RadioButton
+                        android:id="@+id/rg21_clustered"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Clustered" />
+
+                    <RadioButton
+                        android:id="@+id/rg21_numerous"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Numerous" />
+
+                    <RadioButton
+                        android:id="@+id/rg21_scattered"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Scattered" />
+
+                    <RadioButton
+                        android:id="@+id/rg21_several"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Several" />
+
+                    <RadioButton
+                        android:id="@+id/rg21_solitary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Solitary" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/t_habitat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Habitat"
+                    android:textAppearance="?android:attr/textAppearanceLarge" />
+
+                <RadioGroup
+                    android:id="@+id/rg22_habitat"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" >
+
+                    <RadioButton
+                        android:id="@+id/rg22_grasses"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Grasses" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_leaves"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Leaves" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_meadows"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Meadows" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_paths"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:checked="true"
+                        android:text="Paths" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_urban"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Urban" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_waste"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Waste" />
+
+                    <RadioButton
+                        android:id="@+id/rg22_woods"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Woods" />
+                </RadioGroup>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+</FrameLayout>
