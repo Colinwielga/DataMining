@@ -5,19 +5,22 @@ import java.util.Map.Entry;
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
-		ArrayList<NominalInstance> dataSet = parseArff(in, 50);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -50);
+		Scanner lol = new Scanner(System.in);
+		System.out.println("Please enter what percentage you'd like to train with: ");
+		int p = lol.nextInt();
+		ArrayList<NominalInstance> dataSet = parseArff(in, p);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -p);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
 		long dTreeTime = System.nanoTime();
-		long sRT = System.currentTimeMillis();
+		
 		DTI.Tree decisionTree = new DTI(dataSet, testingDataSet, parseAttributes(new File(in).toString(), attrNames), attrNames).decisionTree;
 		System.out.println("\nDecision Tree Induction took " + (System.nanoTime() - dTreeTime)/1000000000.0 + " seconds");
 		long aRT = System.currentTimeMillis();
-		long l = aRT - sRT;
+		
 		System.out.println();
-		System.out.println("DTI runtime is " + l + " milliseconds."); 
+		
 		System.out.println();
 		//run KNN 
 		long start = System.nanoTime();
@@ -164,11 +167,35 @@ class DTI {
 		
 		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
 		int successfulPredictions = 0;
-		for(int i = 0; i < predictedClasses.size(); i++)
-			if (predictedClasses.get(i).equals(tests.get(i).classname))
-				successfulPredictions++;
-		System.out.printf("%s/%s\n", successfulPredictions, predictedClasses.size());
+ 		String[] c = {"poisonous", "edible"};
+ 		
+		double truePos = 0;
+		double falsePos = 0;
+		double trueNeg = 0;
+		double falseNeg = 0;
 		
+		for(int i = 0; i < predictedClasses.size(); i++)
+			if (predictedClasses.get(i).equals(tests.get(i).classname)){
+				if (predictedClasses.get(i).equals(c[0])){
+					truePos++;
+				}else{trueNeg++;}
+				successfulPredictions++;}
+			else{
+				if (predictedClasses.get(i).equals(c[0])){
+					falsePos++;
+				}else{falseNeg++;}
+			}
+		double accu = (truePos + trueNeg)/(truePos + trueNeg + falsePos + falseNeg); 
+		double prec = (truePos)/(truePos + falsePos);
+		double rec = (truePos)/(truePos + falseNeg);
+		System.out.printf("%s/%s\n", successfulPredictions, predictedClasses.size());
+		System.out.println();
+		String confusion ="  +       -\n" + "+ " + truePos + "       " + falseNeg +"\n"
+				+ "- " + falsePos + "       " + trueNeg;
+		System.out.println(confusion);
+		System.out.println("Accuracy: " + accu * 100.0 +"\nPrecision: " + prec * 100.0 + "\nRecall: " +rec * 100.0);
+		System.out.println(); 
+		System.out.println();
 		decisionTree.print(0, attrNames);
 	}
 	
@@ -384,8 +411,7 @@ class DTI {
 			}	
 		}
 
-		//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
-		//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
+		
 		int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<NominalInstance> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
 			if(data.size() == 889) {
 				System.out.println("gggt");
