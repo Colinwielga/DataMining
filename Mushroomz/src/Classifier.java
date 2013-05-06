@@ -5,10 +5,12 @@ import java.util.Map.Entry;
 
 public class Classifier {
 	public static void classify(String in, String inTest) throws IOException{
-		int percentFilter = 10;
-		
-		ArrayList<NominalInstance> dataSet = parseArff(in, percentFilter);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -percentFilter);
+		//Scanner lol = new Scanner(System.in);
+		System.out.println("Please enter what percentage you'd like to train with: ");
+		//int p = lol.nextInt();
+		int p = 10;
+		ArrayList<NominalInstance> dataSet = parseArff(in, p);
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -p);
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
@@ -17,11 +19,11 @@ public class Classifier {
 		long aRT = System.currentTimeMillis();
 		long l = aRT - sRT;
 		System.out.println();
-		System.out.println("DTI runtime is " + l + " milliseconds."); 
+		System.out.println("DTI runtime is " + l/1000.0 + " seconds."); 
 		System.out.println();
 		//run KNN 
 		long start = System.nanoTime();
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, 10);
+		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, p);
 		long between = System.nanoTime();
 		//run ModifiedKNN(just KNN, passed data pruned by DTI)
 		//HashSet<Integer> attrIDs = decisionTree.getTopLevelAttributes(2);
@@ -159,20 +161,36 @@ class DTI {
 	public DTI(ArrayList<NominalInstance> data, ArrayList<NominalInstance> tests, ArrayList<ArrayList<String>> allAttributes, ArrayList<String> attrNames) throws IOException{
 		decisionTree = new Tree(allAttributes, data, new GiniSplit());
 		
+ 		String[] c = {"poisonous", "edible"};
+ 		
+		double truePos = 0;
+		double falsePos = 0;
+		double trueNeg = 0;
+		double falseNeg = 0;
 		ArrayList<String> predictedClasses = predictClasses(tests, decisionTree);
 		int successfulPredictions = 0, TP = 0, AllP = 0;
+		
 		for(int i = 0; i < predictedClasses.size(); i++) {
 			if (predictedClasses.get(i).equals(tests.get(i).classname)) {
 				successfulPredictions++;
-				if(predictedClasses.get(i).equals("poisonous"))
-					TP++;
+				if (predictedClasses.get(i).equals(c[0]))
+					truePos++;
+				else trueNeg++;
+			} else {
+				if (predictedClasses.get(i).equals(c[0]))
+					falsePos++;
+				else falseNeg++;
 			}
-			if(tests.get(i).classname.equals("poisonous"))
-				AllP++;
 		}
-		System.out.printf("Accuracy: %s/%s = %f\n", successfulPredictions, predictedClasses.size(), (double)successfulPredictions/predictedClasses.size());
-		System.out.printf("Poison recall: %s/%s = %f\n", TP, AllP, (double)TP/AllP);
-		
+		double accu = (truePos + trueNeg)/(truePos + trueNeg + falsePos + falseNeg); 
+		double prec = (truePos)/(truePos + falsePos);
+		double rec = (truePos)/(truePos + falseNeg);
+		String confusion ="  +       -\n" + "+ " + truePos + "       " + falseNeg +"\n"
+				+ "- " + falsePos + "       " + trueNeg;
+		System.out.println(confusion);
+		System.out.println("Accuracy: " + accu * 100.0 +"\nPrecision: " + prec * 100.0 + "\nRecall: " +rec * 100.0);
+		System.out.println(); 
+		System.out.println();
 		decisionTree.print(0, attrNames);
 	}
 	
@@ -387,14 +405,8 @@ class DTI {
 				}
 			}	
 		}
-
-		//yeah, establishes hierarchy for Tree class, holy shit this is an ugly method and it doesn't work
-		//I guess, it actually would, if one of the members of each split were pure, but I don't think that'll work
+		
 		int establishHierarchy(Analysis chief, ArrayList<ArrayList<String>> allAttributes, ArrayList<NominalInstance> data, ArrayList<String[]> branch) throws IOException{ //chief is the analysis we're checking with
-			if(data.size() == 889) {
-				System.out.println("gggt");
-			}
-			
 			ArrayList<ArrayList<String>> allAttributesCopy = new ArrayList<ArrayList<String>>(allAttributes.size() - 1);
 			for(int i = 1; i < allAttributes.size(); i++) {
 				allAttributesCopy.add(allAttributes.get(i));
@@ -583,5 +595,3 @@ class DTI {
 		return results;
 		}
 }
-
-

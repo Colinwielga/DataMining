@@ -14,6 +14,6 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:src="@drawable/mush6" />
+        android:src="@drawable/20110131035646!PoisonMushroom-SNES" />
 
 </RelativeLayout>
