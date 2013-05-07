@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Collections;
 import java.text.DecimalFormat;
 import org.jfree.chart.*;
+import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.*;
 import org.jfree.data.xy.*;
 import org.jfree.chart.renderer.xy.*;
@@ -192,7 +193,7 @@ abstract class DistanceMetric {
 			//Make the new Scores objects here. They are used only temporarily to calculate the scores for this distance matrix. They will be destroyed after the function returns.
 			//The Scores objects get passed the name of their target class so that they can add to the class's plot, as well as the name of this distance metric.
 
-		for(int k = 1; k <= 11; k += 2)
+		for(int k = 1; k <= 11; k += 1)
 			printConfusionMatricesForK(tests, trainingRecords, k, scoresPerClass);
 	}
 }
@@ -320,6 +321,8 @@ public class kNN {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
         plot.setRenderer(renderer);
+        //plot.getRangeAxis(0).setUpperBound(0.997);
+        //plot.getRangeAxis(0).setLowerBound(0.989);
         
         ChartPanel chartPanel = new ChartPanel(chart);
         chartPanel.setPreferredSize(new java.awt.Dimension(300, 300));

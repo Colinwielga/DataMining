@@ -9,8 +9,17 @@ public class Classifier {
 		System.out.println("Please enter what percentage you'd like to train with: ");
 		//int p = lol.nextInt();
 		int p = 10;
-		ArrayList<NominalInstance> dataSet = parseArff(in, p);
-		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -p);
+		String knnMethod = //"";
+		   				   "FS-";
+		   				   //"FE-";
+						   //"cFE-";
+		
+		int pDTI = p;
+		if(knnMethod.equals("cFE-"))
+			pDTI = 100;
+		
+		ArrayList<NominalInstance> dataSet = parseArff(in, pDTI); //use pDTI% of the dataset
+		ArrayList<NominalInstance> testingDataSet = parseArff(inTest, -pDTI); //use everything else
 		
 		ArrayList<String> attrNames = new ArrayList<String>();
 		//run DTI
@@ -21,63 +30,76 @@ public class Classifier {
 		System.out.println();
 		System.out.println("DTI runtime is " + l/1000.0 + " seconds."); 
 		System.out.println();
+		
 		//run KNN 
 		long start = System.nanoTime();
-		kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, p);
-		long between = System.nanoTime();
-		//run ModifiedKNN(just KNN, passed data pruned by DTI)
-		//HashSet<Integer> attrIDs = decisionTree.getTopLevelAttributes(2);
-		HashMap<Integer, ArrayList<ArrayList<String>>> attrIDVals = new HashMap<Integer, ArrayList<ArrayList<String>>>();
-		decisionTree.getTopLevelAttrVals(attrIDVals, 100);
-		for(ArrayList<ArrayList<String>> e : attrIDVals.values()) {
-			while(e.remove(new ArrayList<String>())); //Remove [] entries which will always be 0.0 
-			ArrayList<String> biggest = null;
-			for(ArrayList<String> ee : e)
-				if(biggest == null || ee.size() > biggest.size())
-					biggest = ee; //Find the largest remaining set of values for this attribute
-			if(biggest != null)
-				e.remove(biggest); //Remove this set of values as it is the negation of the other values
-		}
+		if(knnMethod.equals("")) {
+			//kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, p);
+		} else if (knnMethod.equals("FS-")) {
+			//run ModifiedKNN(just KNN, passed data pruned by DTI)
+			HashSet<Integer> attrIDs = decisionTree.getTopLevelAttributes(7);
+			for(int a : attrIDs)
+				System.out.print(attrNames.get(a) + " ");
+			kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", attrIDs, p);	
+		} else {
+			HashMap<Integer, ArrayList<ArrayList<String>>> attrIDVals = new HashMap<Integer, ArrayList<ArrayList<String>>>();
+			decisionTree.getTopLevelAttrVals(attrIDVals);
+			for(ArrayList<ArrayList<String>> e : attrIDVals.values()) {
+				while(e.remove(new ArrayList<String>())); //Remove [] entries which will always be 0.0 
+				ArrayList<String> biggest = null;
+				for(ArrayList<String> ee : e)
+					if(biggest == null || ee.size() > biggest.size())
+						biggest = ee; //Find the largest remaining set of values for this attribute
+				if(biggest != null)
+					e.remove(biggest); //Remove this set of values as it is the negation of the other values
+			}
+			
+			if(knnMethod.equals("cFE-")) {
+				dataSet = parseArff(in, 5);
+				testingDataSet = parseArff(inTest, -5);				
+			}
+			
+			//Now that features have been extracted from the full dataset, test kNN using a small (10%) subset
 
-		//Now that features have been extracted from the full dataset, test kNN using a small (10%) subset 
-		//dataSet = parseArff(in, 10);
-		//testingDataSet = parseArff(inTest, -10);
-		ArrayList<Record> numericDataSet = new ArrayList<Record>(); 
-		ArrayList<Record> testDataSet = new ArrayList<Record>(); 
-		for(NominalInstance i : dataSet) {
-			Record r = i.featureExtract(attrIDVals);
-			numericDataSet.add(r);
-			kNN.classes.get(r.classname).count++;
-			if(kNN.classes.get(r.classname).avgAttrVal == null) {
-				kNN.classes.get(r.classname).avgAttrVal = new ArrayList<Double>(r.attributes);
-				kNN.classes.get(r.classname).stddevAttrVal = new ArrayList<Double>(r.attributes);
-				for(int a = 0; a < kNN.classes.get(r.classname).stddevAttrVal.size(); a++)
-					kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a)*kNN.classes.get(r.classname).stddevAttrVal.get(a));
-			} else for(int a = 0; a < r.attributes.size(); a++) {
-				kNN.classes.get(r.classname).avgAttrVal.set(a, kNN.classes.get(r.classname).avgAttrVal.get(a) + r.attributes.get(a));
-				kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a) + r.attributes.get(a)*r.attributes.get(a));
+			
+			ArrayList<Record> numericDataSet = new ArrayList<Record>(); 
+			ArrayList<Record> testDataSet = new ArrayList<Record>(); 
+			for(NominalInstance i : dataSet) {
+				Record r = i.featureExtract(attrIDVals);
+				numericDataSet.add(r);
+				kNN.classes.get(r.classname).count++;
+				if(kNN.classes.get(r.classname).avgAttrVal == null) {
+					kNN.classes.get(r.classname).avgAttrVal = new ArrayList<Double>(r.attributes);
+					kNN.classes.get(r.classname).stddevAttrVal = new ArrayList<Double>(r.attributes);
+					for(int a = 0; a < kNN.classes.get(r.classname).stddevAttrVal.size(); a++)
+						kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a)*kNN.classes.get(r.classname).stddevAttrVal.get(a));
+				} else for(int a = 0; a < r.attributes.size(); a++) {
+					kNN.classes.get(r.classname).avgAttrVal.set(a, kNN.classes.get(r.classname).avgAttrVal.get(a) + r.attributes.get(a));
+					kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a) + r.attributes.get(a)*r.attributes.get(a));
+				}
 			}
+			for(Class c : kNN.classes.values())
+				for(int d = 0; d < c.avgAttrVal.size(); d++) {
+					c.avgAttrVal.set(d, c.avgAttrVal.get(d)/c.count);
+					c.stddevAttrVal.set(d, Math.sqrt(c.stddevAttrVal.get(d)/c.count - c.avgAttrVal.get(d)*c.avgAttrVal.get(d)));
+				}
+			ArrayList<Double> S2N = new ArrayList<Double>();
+			ArrayList<Double> Tval = new ArrayList<Double>();
+			for(int a = 0; a < kNN.classes.get("poisonous").avgAttrVal.size(); a++) {
+				S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + kNN.classes.get("edible").stddevAttrVal.get(a)));
+				Tval.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/Math.sqrt(kNN.classes.get("poisonous").stddevAttrVal.get(a)*kNN.classes.get("poisonous").stddevAttrVal.get(a)/kNN.classes.get("poisonous").count + kNN.classes.get("edible").stddevAttrVal.get(a)*kNN.classes.get("edible").stddevAttrVal.get(a)/kNN.classes.get("edible").count));
+			}
+			for(NominalInstance i : testingDataSet)
+				testDataSet.add(i.featureExtract(attrIDVals));
+			//kNN.classifyRecords(numericDataSet, testDataSet, null);
+			int x = 0;
+			for(Entry<Integer, ArrayList<ArrayList<String>>> e : attrIDVals.entrySet())
+				for(ArrayList<String> vals : e.getValue()) {
+					System.out.printf("%s: %s (S2N: %6.6f, Tval: %6.6f)\n", attrNames.get(e.getKey() + 1), vals, S2N.get(x), Tval.get(x));
+					x++;
+				}
 		}
-		for(Class c : kNN.classes.values())
-			for(int d = 0; d < c.avgAttrVal.size(); d++) {
-				c.avgAttrVal.set(d, c.avgAttrVal.get(d)/c.count);
-				c.stddevAttrVal.set(d, Math.sqrt(c.stddevAttrVal.get(d)/c.count - c.avgAttrVal.get(d)*c.avgAttrVal.get(d)));
-			}
-		ArrayList<Double> S2N = new ArrayList<Double>();
-		ArrayList<Double> Tval = new ArrayList<Double>();
-		for(int a = 0; a < kNN.classes.get("poisonous").avgAttrVal.size(); a++) {
-			S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + kNN.classes.get("edible").stddevAttrVal.get(a)));
-			Tval.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/Math.sqrt(kNN.classes.get("poisonous").stddevAttrVal.get(a)*kNN.classes.get("poisonous").stddevAttrVal.get(a)/kNN.classes.get("poisonous").count + kNN.classes.get("edible").stddevAttrVal.get(a)*kNN.classes.get("edible").stddevAttrVal.get(a)/kNN.classes.get("edible").count));
-		}
-		for(NominalInstance i : testingDataSet)
-			testDataSet.add(i.featureExtract(attrIDVals));
-		//kNN.classifyRecords(numericDataSet, testDataSet, null);
-		int x = 0;
-		for(Entry<Integer, ArrayList<ArrayList<String>>> e : attrIDVals.entrySet())
-			for(ArrayList<String> vals : e.getValue()) {
-				System.out.printf("%s: %s (S2N: %6.6f, Tval: %6.6f)\n", attrNames.get(e.getKey() + 1), vals, S2N.get(x), Tval.get(x));
-				x++;
-			}
+		long between = System.nanoTime();
 
 		System.out.println("Time to run kNN on all attributes: " + (between - start)/1000000000);
 		System.out.println("Time to run kNN on significant attributes: " + (System.nanoTime() - between)/1000000000);
@@ -99,6 +121,7 @@ public class Classifier {
 		while ((line = inputStream.readLine()) != null && line.indexOf(",") != -1)
 			records.add(new NominalInstance(line));
 		inputStream.close();
+		
 		if(percentFilter > 0) {
 			System.out.println("to: " + (percentFilter*records.size())/100);
 			return new ArrayList<NominalInstance>(records.subList(0, (percentFilter*records.size())/100));
@@ -340,21 +363,21 @@ class DTI {
 				build(h);
 		}
 		
-		public void getTopLevelAttrVals(HashMap<Integer, ArrayList<ArrayList<String>>> attrs, int i) {
-			//attrs.put(0, NominalInstance.allClasses);
-			
-			if(i > 0 && splitValues != null) {
-				if(!attrs.containsKey(splitAttr))
-					attrs.put(splitAttr, new ArrayList<ArrayList<String>>());
-				for(String[] splitVal : splitValues) {
+		public void getTopLevelAttrVals(HashMap<Integer, ArrayList<ArrayList<String>>> attrs) {
+			if(splitValues != null) { //If this is not a leaf node
+				if(!attrs.containsKey(splitAttr)) //if the split attribute of this node has not been added yet
+					attrs.put(splitAttr, new ArrayList<ArrayList<String>>()); //add it
+				for(String[] splitVal : splitValues) { //for the splitting criteria of this node's two child nodes
 					ArrayList<String> splitVals = new ArrayList<String>(Arrays.asList(splitVal));
 					for(ArrayList<String> extractedSubfeatures : attrs.get(splitAttr))
-						if(extractedSubfeatures.containsAll(splitVals))
-							extractedSubfeatures.removeAll(splitVals);
+						//first check to see if these values are already checked by another derived attribute
+						if(extractedSubfeatures.containsAll(splitVals)) 
+							extractedSubfeatures.removeAll(splitVals); //if they are, remove them from that check
+					//add the values for this split to their own derived attribute check
 					attrs.get(splitAttr).add(splitVals);
 				}
 				for(Tree node : nodes)
-					node.getTopLevelAttrVals(attrs, i - 1);
+					node.getTopLevelAttrVals(attrs); //recurse on child nodes
 			}
 		}
 
