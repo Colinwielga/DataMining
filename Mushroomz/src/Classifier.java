@@ -55,13 +55,12 @@ public class Classifier {
 			}
 			
 			if(knnMethod.equals("cFE-")) {
-				dataSet = parseArff(in, 5);
-				testingDataSet = parseArff(inTest, -5);				
+				//fix these two datasets because we already
+				dataSet = parseArff(in, p);
+				testingDataSet = parseArff(inTest, -p);				
 			}
 			
-			//Now that features have been extracted from the full dataset, test kNN using a small (10%) subset
-
-			
+			//Now that features have been extracted from the full dataset, train kNN using a small (p%) subset
 			ArrayList<Record> numericDataSet = new ArrayList<Record>(); 
 			ArrayList<Record> testDataSet = new ArrayList<Record>(); 
 			for(NominalInstance i : dataSet) {
@@ -101,8 +100,7 @@ public class Classifier {
 		}
 		long between = System.nanoTime();
 
-		System.out.println("Time to run kNN on all attributes: " + (between - start)/1000000000);
-		System.out.println("Time to run kNN on significant attributes: " + (System.nanoTime() - between)/1000000000);
+		System.out.println("Time to run kNN: " + (between - start)/1000000000);
 		System.out.println("Done");
 	}
 	

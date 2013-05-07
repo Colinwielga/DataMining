@@ -18,6 +18,8 @@ import weka.core.Instances;
 import weka.core.converters.ArffLoader.ArffReader;
 
 import javax.swing.JPanel;
+
+import java.awt.Color;
 import java.awt.GridLayout;
 
 //Stores aggregate scores for all distance metrics and k-values in a plottable and queryable form.
@@ -321,6 +323,9 @@ public class kNN {
         XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
         renderer.setSeriesLinesVisible(0, true);
         plot.setRenderer(renderer);
+        plot.setBackgroundPaint(Color.white);
+        plot.setRangeGridlinePaint(Color.gray);
+        plot.setDomainGridlinePaint(Color.gray);
         //plot.getRangeAxis(0).setUpperBound(0.997);
         //plot.getRangeAxis(0).setLowerBound(0.989);
         
