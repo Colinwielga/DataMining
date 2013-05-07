@@ -8,7 +8,7 @@ public class Classifier {
 		//Scanner lol = new Scanner(System.in);
 		System.out.println("Please enter what percentage you'd like to train with: ");
 		//int p = lol.nextInt();
-		int p = 10;
+		int p = 15;
 		String knnMethod = //"";
 		   				   "FS-";
 		   				   //"FE-";
@@ -34,12 +34,10 @@ public class Classifier {
 		//run KNN 
 		long start = System.nanoTime();
 		if(knnMethod.equals("")) {
-			//kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, p);
+			kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", null, p);
 		} else if (knnMethod.equals("FS-")) {
 			//run ModifiedKNN(just KNN, passed data pruned by DTI)
 			HashSet<Integer> attrIDs = decisionTree.getTopLevelAttributes(7);
-			for(int a : attrIDs)
-				System.out.print(attrNames.get(a) + " ");
 			kNN.classify("mushrooms.expanded.shuffled.nostalkroot.arff", "mushrooms.expanded.shuffled.nostalkroot.arff", attrIDs, p);	
 		} else {
 			HashMap<Integer, ArrayList<ArrayList<String>>> attrIDVals = new HashMap<Integer, ArrayList<ArrayList<String>>>();
@@ -71,10 +69,13 @@ public class Classifier {
 					kNN.classes.get(r.classname).avgAttrVal = new ArrayList<Double>(r.attributes);
 					kNN.classes.get(r.classname).stddevAttrVal = new ArrayList<Double>(r.attributes);
 					for(int a = 0; a < kNN.classes.get(r.classname).stddevAttrVal.size(); a++)
-						kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a)*kNN.classes.get(r.classname).stddevAttrVal.get(a));
+						kNN.classes.get(r.classname).stddevAttrVal.set(a, 
+								kNN.classes.get(r.classname).stddevAttrVal.get(a)*kNN.classes.get(r.classname).stddevAttrVal.get(a));
 				} else for(int a = 0; a < r.attributes.size(); a++) {
-					kNN.classes.get(r.classname).avgAttrVal.set(a, kNN.classes.get(r.classname).avgAttrVal.get(a) + r.attributes.get(a));
-					kNN.classes.get(r.classname).stddevAttrVal.set(a, kNN.classes.get(r.classname).stddevAttrVal.get(a) + r.attributes.get(a)*r.attributes.get(a));
+					kNN.classes.get(r.classname).avgAttrVal.set(a, 
+							kNN.classes.get(r.classname).avgAttrVal.get(a) + r.attributes.get(a));
+					kNN.classes.get(r.classname).stddevAttrVal.set(a, 
+							kNN.classes.get(r.classname).stddevAttrVal.get(a) + r.attributes.get(a)*r.attributes.get(a));
 				}
 			}
 			for(Class c : kNN.classes.values())
@@ -85,8 +86,15 @@ public class Classifier {
 			ArrayList<Double> S2N = new ArrayList<Double>();
 			ArrayList<Double> Tval = new ArrayList<Double>();
 			for(int a = 0; a < kNN.classes.get("poisonous").avgAttrVal.size(); a++) {
-				S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + kNN.classes.get("edible").stddevAttrVal.get(a)));
-				Tval.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - kNN.classes.get("edible").stddevAttrVal.get(a))/Math.sqrt(kNN.classes.get("poisonous").stddevAttrVal.get(a)*kNN.classes.get("poisonous").stddevAttrVal.get(a)/kNN.classes.get("poisonous").count + kNN.classes.get("edible").stddevAttrVal.get(a)*kNN.classes.get("edible").stddevAttrVal.get(a)/kNN.classes.get("edible").count));
+				S2N.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - 
+						kNN.classes.get("edible").stddevAttrVal.get(a))/(kNN.classes.get("poisonous").stddevAttrVal.get(a) + 
+								kNN.classes.get("edible").stddevAttrVal.get(a)));
+				Tval.add(Math.abs(kNN.classes.get("poisonous").avgAttrVal.get(a) - 
+						kNN.classes.get("edible").stddevAttrVal.get(a))/
+						Math.sqrt(kNN.classes.get("poisonous").stddevAttrVal.get(a)*kNN.classes.get("poisonous").stddevAttrVal.get(a)/
+								kNN.classes.get("poisonous").count + 
+								kNN.classes.get("edible").stddevAttrVal.get(a)*kNN.classes.get("edible").stddevAttrVal.get(a)/
+								kNN.classes.get("edible").count));
 			}
 			for(NominalInstance i : testingDataSet)
 				testDataSet.add(i.featureExtract(attrIDVals));

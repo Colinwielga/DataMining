@@ -56,21 +56,15 @@ class Record {
 	}
 	
 	public Record(Instance instance, Instances instances) {
-		//assert(instance.classAttribute().numValues() == 1);
 		classname = instance.stringValue(0);
 		
 		for(int i = 1; i < instance.numAttributes(); i++) {
-			//assert(instance.attribute(i).numValues() == 1);
 			for(int j = 0; j < kNN.attributeMapping[i].size(); j++)
-				if(kNN.attributeMapping[i].get(instance.stringValue(i)) != null && j == kNN.attributeMapping[i].get(instance.stringValue(i)))
+				if(kNN.attributeMapping[i].get(instance.stringValue(i)) != null && 
+						j == kNN.attributeMapping[i].get(instance.stringValue(i)))
 					attributes.add(1.0);
 				else
 					attributes.add(0.0);
-			/*
-			if(instance.stringValue(i).equals("?"))
-				attributes.set(i-1, 0.5);
-			else
-				attributes.set(i-1, genes.attributeMapping[i].get(instance.stringValue(i)).doubleValue());*/
 		}
 	}
 
@@ -105,16 +99,17 @@ class Record {
 		//Sort the closest records first, so the first k records in list are the closest ones.
 		java.util.Arrays.sort(recsWithDist); 
 		
-		//Hold the classes found in the nearest k samples in a hash table, using the values to hold the weighted vote of each class on the final prediction
+		//Hold the classes found in the nearest k samples in a hash table,
+		//using the values to hold the weighted vote of each class on the final prediction
 		HashMap<String, Double> closeClasses = new HashMap<String, Double>();
 		for(int i = 0; i < k && i < recsWithDist.length; i++) {
 			String foundClass = recsWithDist[i].trainingRec.classname;
 			if(!closeClasses.containsKey(foundClass)) closeClasses.put(foundClass, 0.0);
-			closeClasses.put(foundClass, closeClasses.get(foundClass) + 1/recsWithDist[i].distance); //Increase the weight of this class by the inverse of the distance to the neighbor
+			//Increase the weight of this class by the inverse of the distance to the neighbor
+			closeClasses.put(foundClass, closeClasses.get(foundClass) + 1/recsWithDist[i].distance);
 		}
 
-		//Return the class with the greatest weight. TODO: Consider switching to priority queue/max heap
-		
+		//Return the class with the greatest weight.
 		Comparator<Map.Entry<String, Double>> findClosestClass = new Comparator<Map.Entry<String, Double>>() {
 			public int compare(Map.Entry<String, Double> a, Map.Entry<String, Double> b) {
 				return a.getValue().compareTo(b.getValue());
